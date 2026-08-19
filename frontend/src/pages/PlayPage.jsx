@@ -5,11 +5,11 @@ import GameGrid from "../components/GameGrid.jsx";
 import WordList from "../components/WordList.jsx";
 import api from "../lib/api/api.js";
 
-export const GRID_SIZES = [5, 6, 7, 8, 9];
-export const DEFAULT_GRID_SIZE = 5;
-export const ROUND_SECONDS = 90;
+export default function PlayPage({ setUser, sound }) {
+  const GRID_SIZES = [5, 6, 7, 8, 9];
+  const DEFAULT_GRID_SIZE = 5;
+  const ROUND_SECONDS = 90;
 
-export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = null }) {
   const [gridSize, setGridSize] = useState(DEFAULT_GRID_SIZE);
   const [restartKey, setRestartKey] = useState(0);
   const [grid, setGrid] = useState([]);
@@ -36,32 +36,23 @@ export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = 
 
     async function startGame() {
       try {
-        const res = await api.post("/api/game/start", {
-          gridSize,
-          mode,
-          puzzleId: dailyPuzzle?.id || null,
-        });
-
+        const res = await api.post("/api/game/start", { gridSize });
         const data = res.data;
-
         setGrid(data.grid);
         setScore(data.score);
         setFound(data.found);
         setLoading(false);
       } catch (err) {
         setError(err.response?.data?.detail || err.message || "Unable to start game.");
-
         setLoading(false);
       }
     }
 
     startGame();
-  }, [gridSize, restartKey, mode, dailyPuzzle?.id]);
+  }, [gridSize, restartKey]);
 
   useEffect(() => {
-    if (paused || seconds <= 0 || loading) {
-      return;
-    }
+    if (paused || seconds <= 0 || loading) return;
 
     const timer = window.setInterval(() => {
       setSeconds((value) => Math.max(value - 1, 0));
@@ -104,45 +95,28 @@ export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = 
   };
 
   const handleStart = (cell) => {
-    if (loading || paused || seconds === 0 || grid.length === 0) {
-      return;
-    }
+    if (loading || paused || seconds === 0 || grid.length === 0) return;
 
     setSelected([cell]);
     setMessage(grid[cell[0]][cell[1]]);
   };
 
   const handleMove = (cell) => {
-    if (loading || paused || seconds === 0 || grid.length === 0) {
-      return;
-    }
-
-    if (selected.length === 0) {
-      return;
-    }
+    if (loading || paused || seconds === 0 || grid.length === 0) return;
+    if (selected.length === 0) return;
 
     const previous = selected[selected.length - 1];
-
     const rowDistance = Math.abs(cell[0] - previous[0]);
-
     const columnDistance = Math.abs(cell[1] - previous[1]);
-
     const adjacent = rowDistance <= 1 && columnDistance <= 1 && (rowDistance !== 0 || columnDistance !== 0);
 
-    if (!adjacent) {
-      return;
-    }
+    if (!adjacent) return;
 
     const alreadySelected = selected.some(([row, column]) => row === cell[0] && column === cell[1]);
-
-    if (alreadySelected) {
-      return;
-    }
+    if (alreadySelected) return;
 
     const nextSelection = [...selected, cell];
-
     setSelected(nextSelection);
-
     setMessage(nextSelection.map(([row, column]) => grid[row][column]).join(""));
   };
 
@@ -174,21 +148,16 @@ export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = 
           return;
         }
 
-        setGrid(result.grid || []);
-        setScore(result.score ?? 0);
-        setFound(result.found || []);
-        setNewCells(result.newCells || []);
-
+        setGrid(result.grid);
+        setScore(result.score);
+        setFound(result.found);
+        setNewCells(result.newCells);
         setMessage(`+${result.points} ${result.word} collected!`);
 
         setUser((value) => ({
           ...value,
           words: value.words + 1,
         }));
-
-        if (sound) {
-          window.navigator?.vibrate?.(25);
-        }
 
         window.setTimeout(() => {
           setNewCells([]);
@@ -206,12 +175,10 @@ export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = 
   const displayMessage = selected.length ? selected.map(([row, col]) => grid[row]?.[col] || "").join("") : message;
 
   return (
-    <div>
+    <div className="">
       <div className="mb-6 flex flex-row items-end justify-between border-b border-brand-border pb-2">
         <div>
           <h1 className="text-4xl font-black tracking-tight">Wordfall</h1>
-
-          {mode === "daily" && dailyPuzzle?.id && <p className="mt-1 text-sm font-bold text-brand-accent">Daily #{dailyPuzzle.id}</p>}
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-2">
@@ -246,7 +213,6 @@ export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = 
             className="inline-flex items-center gap-2 rounded-xl border border-brand-accent bg-brand-accent/10 px-3 py-2.5 text-sm font-bold text-brand-accent"
           >
             {paused ? <Play size={16} /> : <Pause size={16} />}
-
             {paused ? "Resume" : "Pause"}
           </button>
         </div>
