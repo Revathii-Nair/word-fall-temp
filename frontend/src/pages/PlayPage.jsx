@@ -9,10 +9,11 @@ export const GRID_SIZES = [5, 6, 7, 8, 9];
 export const DEFAULT_GRID_SIZE = 5;
 export const ROUND_SECONDS = 90;
 
-export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = null }) {
+export default function PlayPage({ setUser, mode = "free", dailyPuzzle = null }) {
   const [gridSize, setGridSize] = useState(DEFAULT_GRID_SIZE);
   const [restartKey, setRestartKey] = useState(0);
   const [grid, setGrid] = useState([]);
+  const [gameId, setGameId] = useState(null);
   const [paused, setPaused] = useState(false);
   const [seconds, setSeconds] = useState(ROUND_SECONDS);
   const [score, setScore] = useState(0);
@@ -22,6 +23,7 @@ export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = 
   const [message, setMessage] = useState("Drag through adjacent letters to build a word.");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [finished, setFinished] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -32,13 +34,17 @@ export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = 
     setSeconds(ROUND_SECONDS);
     setScore(0);
     setFound([]);
+    setGameId(null);
+    setFinished(false);
     setMessage("Drag through adjacent letters to build a word.");
 
     async function startGame() {
       try {
         const res = await api.post("/api/game/start", { gridSize, mode, puzzleId: dailyPuzzle?.id || null });
         const data = res.data;
+
         setGrid(data.grid);
+        setGameId(data.gameId);
         setScore(data.score);
         setFound(data.found);
         setLoading(false);
@@ -52,7 +58,7 @@ export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = 
   }, [gridSize, restartKey, mode, dailyPuzzle?.id]);
 
   useEffect(() => {
-    if (paused || seconds <= 0 || loading) return;
+    if (paused || seconds <= 0 || loading || finished) return;
 
     const timer = window.setInterval(() => {
       setSeconds((value) => Math.max(value - 1, 0));
@@ -61,13 +67,52 @@ export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = 
     return () => {
       window.clearInterval(timer);
     };
-  }, [paused, loading]);
+  }, [paused, loading, finished]);
 
   useEffect(() => {
     if (error) {
       setMessage(error);
     }
   }, [error]);
+
+  useEffect(() => {
+    if (seconds !== 0 || gameId === null || loading || finished) return;
+
+    setFinished(true);
+    setPaused(true);
+    setSelected([]);
+    setMessage("Time's up! Saving your game...");
+
+    async function finishGame() {
+      try {
+        const res = await api.post("/api/game/finish", { gameId });
+        const data = res.data;
+
+        if (!data.accepted) {
+          setError(data.message || "Unable to finish game.");
+          return;
+        }
+
+        const savedGame = data.game;
+
+        setScore(savedGame.score);
+        setFound(savedGame.words || []);
+        setGameId(null);
+        setMessage(`Game finished! Score: ${savedGame.score}`);
+
+        setUser((value) => ({
+          ...value,
+          best: Math.max(value.best || 0, savedGame.score || 0),
+          words: (value.words || 0) + (savedGame.wordCount || 0),
+          rounds: (value.rounds || 0) + 1,
+        }));
+      } catch (err) {
+        setError(err.response?.data?.detail || err.message || "Unable to finish game.");
+      }
+    }
+
+    finishGame();
+  }, [seconds, gameId, loading, finished, setUser]);
 
   const reset = () => {
     setSelected([]);
@@ -76,6 +121,8 @@ export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = 
     setSeconds(ROUND_SECONDS);
     setScore(0);
     setFound([]);
+    setGameId(null);
+    setFinished(false);
     setError("");
     setMessage("Drag through adjacent letters to build a word.");
     setRestartKey((value) => value + 1);
@@ -89,6 +136,8 @@ export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = 
     setSeconds(ROUND_SECONDS);
     setScore(0);
     setFound([]);
+    setGameId(null);
+    setFinished(false);
     setError("");
     setMessage(`New ${size}x${size} random grid.`);
     setRestartKey((value) => value + 1);
@@ -113,15 +162,17 @@ export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = 
     if (!adjacent) return;
 
     const alreadySelected = selected.some(([row, column]) => row === cell[0] && column === cell[1]);
+
     if (alreadySelected) return;
 
     const nextSelection = [...selected, cell];
+
     setSelected(nextSelection);
     setMessage(nextSelection.map(([row, column]) => grid[row][column]).join(""));
   };
 
   const handleFinish = () => {
-    if (loading || paused || seconds === 0) {
+    if (loading || paused || seconds === 0 || finished) {
       setSelected([]);
       return;
     }
@@ -138,6 +189,7 @@ export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = 
     async function collect() {
       try {
         const res = await api.post("/api/game/collect", {
+          gameId,
           cells: currentSelection,
         });
 
@@ -170,7 +222,7 @@ export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = 
     collect();
   };
 
-  const running = !paused && seconds > 0 && !loading;
+  const running = !paused && seconds > 0 && !loading && !finished;
 
   const displayMessage = selected.length ? selected.map(([row, col]) => grid[row]?.[col] || "").join("") : message;
 
@@ -210,7 +262,7 @@ export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = 
 
           <button
             type="button"
-            disabled={seconds === 0 || loading}
+            disabled={seconds === 0 || loading || finished}
             onClick={() => setPaused((value) => !value)}
             className="inline-flex items-center gap-2 rounded-xl border border-brand-accent bg-brand-accent/10 px-3 py-2.5 text-sm font-bold text-brand-accent"
           >

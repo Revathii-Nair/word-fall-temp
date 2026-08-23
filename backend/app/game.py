@@ -11,10 +11,6 @@ class GameState:
         self.found = found or []
 
 
-def random_letter():
-    return random.choice(LETTERS)
-
-
 def make_grid(rows, cols):
     grid = []
     for _ in range(rows):
@@ -31,19 +27,17 @@ def new_game(grid_size=DEFAULT_GRID_SIZE):
 
 def get_word_from_cells(grid, cells):
     word = ""
-    for row, column in cells:
-        word += grid[row][column]
+    for row, col in cells:
+        word += grid[row][col]
     return word
 
 
 def is_adjacent(previous, current):
     row_distance = abs(current[0] - previous[0])
     column_distance = abs(current[1] - previous[1])
-
     if row_distance <= 1 and column_distance <= 1:
         return not (row_distance == 0 and column_distance == 0)
     return False
-
 
 
 def validate_cells(grid, cells):
@@ -57,7 +51,6 @@ def validate_cells(grid, cells):
         if row < 0 or row >= rows or col < 0 or col >= cols:
             return None
         current = (row, col)
-
         if previous and not is_adjacent(previous, current):
             return None
         previous = current
@@ -65,30 +58,25 @@ def validate_cells(grid, cells):
     return get_word_from_cells(grid, cells)
 
 
-
 def is_word(word):
     upper = word.upper()
     if upper in WORD_BANK:
         return upper
-
     reverse = upper[::-1]
-
     if reverse in WORD_BANK:
         return reverse
     return None
 
 
 def cascade_columns(grid, cells):
-    rows, cols = len(grid), len(grid[0])
+    rows = len(grid)
     next_grid = [row[:] for row in grid]
+    removed, new_cells = {}, []
 
-    removed = {}
-    new_cells = []
-
-    for r, c in cells:
-        if c not in removed:
-            removed[c] = set()
-        removed[c].add(r)
+    for row, col in cells:
+        if col not in removed:
+            removed[col] = set()
+        removed[col].add(row)
 
     for c, removed_rows in removed.items():
         survivors = []
@@ -98,22 +86,22 @@ def cascade_columns(grid, cells):
 
         incoming = []
         for _ in range(len(removed_rows)):
-            incoming.append(random_letter())
+            incoming.append(random.choice(LETTERS))
 
         column_values = survivors + incoming
         column_values = column_values[-rows:]
         column_values.reverse()
 
         for r in range(rows):
-            next_grid[r][c] = column_values[r]
+            next_grid[r][col] = column_values[r]
             if r < len(removed_rows):
-                new_cells.append((r, c))
+                new_cells.append([r, col])
 
     return next_grid, new_cells
 
-def collect_word(state, cells):
-    raw = validate_cells(state.grid,cells)
 
+def collect_word(state, cells):
+    raw = validate_cells(state.grid, cells)
     if not raw:
         return {
             "accepted": False,
@@ -125,7 +113,6 @@ def collect_word(state, cells):
         }
 
     candidate = is_word(raw)
-
     if not candidate:
         return {
             "accepted": False,
@@ -137,7 +124,8 @@ def collect_word(state, cells):
         }
 
     points = len(candidate) * 10
-    collapsed_grid, new_cells = cascade_columns(state.grid,cells)
+    collapsed_grid, new_cells = cascade_columns(state.grid, cells)
+
     state.grid = collapsed_grid
     state.score += points
     state.found.append(candidate)
