@@ -136,7 +136,7 @@ def collect_word(state, cells):
             "newCells": [],
         }
 
-    points = len(candidate) * 14
+    points = len(candidate) * 10
     collapsed_grid, new_cells = cascade_columns(state.grid,cells)
     state.grid = collapsed_grid
     state.score += points
