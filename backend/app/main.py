@@ -31,6 +31,29 @@ CURRENT_USER_ID = "user-001"
 def root():
     return {"message": "Wordfall API is running."}
 
+@app.post("/api/auth/login")
+def login(user: dict):
+    return {
+        "id": "user-001",
+        "name": "Revathi",
+        "email": user.get("email"),
+        "best": 684,
+        "words": 0,
+        "rounds": 0,
+        "streak": 5,
+    }
+
+@app.post("/api/auth/signup")
+def signup(user: dict):
+    return {
+        "id": "user-001",
+        "name": user.get("name"),
+        "email": user.get("email"),
+        "best": 0,
+        "words": 0,
+        "rounds": 0,
+        "streak": 0,
+    } 
 
 @app.get("/api/user")
 def user():

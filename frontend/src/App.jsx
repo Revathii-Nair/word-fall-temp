@@ -8,6 +8,8 @@ import ProfilePage from "./pages/ProfilePage.jsx";
 import AnalyticsPage from "./pages/AnalyticsPage.jsx";
 import HowToPlayPage from "./pages/HowToPlayPage.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
+import SignInPage from "./pages/SignInPage.jsx";
+import SignUpPage from "./pages/SignUpPage.jsx";
 import api from "./lib/api/api.js";
 
 export default function App() {
@@ -47,6 +49,10 @@ export default function App() {
 
         <div className="mx-auto w-full max-w-[1500px] px-4 pb-10 pt-5 sm:px-6 lg:px-8">
           <Routes>
+            <Route path="/signin" element={<SignInPage setUser={setUser} />} />
+
+            <Route path="/signup" element={<SignUpPage setUser={setUser} />} />
+
             <Route path="/" element={<HomePage user={user} />} />
 
             <Route path="/play" element={<PlayPage user={user} setUser={setUser} />} />

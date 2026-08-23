@@ -5,11 +5,11 @@ import GameGrid from "../components/GameGrid.jsx";
 import WordList from "../components/WordList.jsx";
 import api from "../lib/api/api.js";
 
-export default function PlayPage({ setUser, sound }) {
-  const GRID_SIZES = [5, 6, 7, 8, 9];
-  const DEFAULT_GRID_SIZE = 5;
-  const ROUND_SECONDS = 90;
+export const GRID_SIZES = [5, 6, 7, 8, 9];
+export const DEFAULT_GRID_SIZE = 5;
+export const ROUND_SECONDS = 90;
 
+export default function PlayPage({ setUser, sound, mode = "free", dailyPuzzle = null }) {
   const [gridSize, setGridSize] = useState(DEFAULT_GRID_SIZE);
   const [restartKey, setRestartKey] = useState(0);
   const [grid, setGrid] = useState([]);
@@ -36,7 +36,7 @@ export default function PlayPage({ setUser, sound }) {
 
     async function startGame() {
       try {
-        const res = await api.post("/api/game/start", { gridSize });
+        const res = await api.post("/api/game/start", { gridSize, mode, puzzleId: dailyPuzzle?.id || null });
         const data = res.data;
         setGrid(data.grid);
         setScore(data.score);
@@ -49,7 +49,7 @@ export default function PlayPage({ setUser, sound }) {
     }
 
     startGame();
-  }, [gridSize, restartKey]);
+  }, [gridSize, restartKey, mode, dailyPuzzle?.id]);
 
   useEffect(() => {
     if (paused || seconds <= 0 || loading) return;
@@ -175,10 +175,12 @@ export default function PlayPage({ setUser, sound }) {
   const displayMessage = selected.length ? selected.map(([row, col]) => grid[row]?.[col] || "").join("") : message;
 
   return (
-    <div className="">
+    <div>
       <div className="mb-6 flex flex-row items-end justify-between border-b border-brand-border pb-2">
         <div>
           <h1 className="text-4xl font-black tracking-tight">Wordfall</h1>
+
+          {mode === "daily" && dailyPuzzle?.id && <p className="mt-1 text-sm font-bold text-brand-accent">Daily #{dailyPuzzle.id}</p>}
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-2">
