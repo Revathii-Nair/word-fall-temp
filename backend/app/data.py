@@ -110,15 +110,16 @@ def calculate_difficulty(user_id, words):
 
     total_words = 0
     for game in history:
-        total_words += int(game.get("wordCount",0))
+        total_words += int(game.get("wordCount", 0))
 
-    average = (total_words / len(history))
+    average = total_words / len(history)
     if average <= 0:
         return 50
-
-    difference = (words - average)
+    
+    words = int(words)
+    difference = words - average
     difficulty = 50 - (difference * 5)
-    difficulty = max(0,min(100, difficulty))
+    difficulty = max(0, min(100, difficulty))
     return round(difficulty)
 
 def get_leaderboard():
@@ -129,12 +130,13 @@ def get_leaderboard():
 
     for position, user in enumerate(users,start=1):
         leaderboard.append({
-                "position": position,
-                "userId": user.get("userId",""),
-                "name": user.get("name", "WordQuest Player"),
-                "best": int(user.get("best",0)),
-                "words": int(user.get("words",0))
-            })
+            "position": position,
+            "userId": user.get("userId", ""),
+            "name": user.get("name", "WordQuest Player"),
+            "best": int(user.get("best", 0)),
+            "words": int(user.get("words", 0)),
+            "rounds": int(user.get("rounds", 0)),
+        })
     return leaderboard
 
 def get_user_position(user_id):

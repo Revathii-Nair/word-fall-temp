@@ -9,23 +9,28 @@ import api from "../lib/api/api.js";
 export default function AnalyticsPage({ user }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    api
-      .get("/api/user/history")
-      .then(({ data }) => {
-        setHistory(data);
-      })
-      .finally(() => {
+    async function loadHistory() {
+      try {
+        const response = await api.get("/api/user/history");
+        setHistory(response.data || []);
+      } catch (err) {
+        setError(err.response?.data?.detail || err.message || "Unable to load game history.");
+      } finally {
         setLoading(false);
-      });
+      }
+    }
+
+    loadHistory();
   }, []);
 
-  const totalWords = history.reduce((total, game) => total + game.words, 0);
+  const totalWords = history.reduce((total, game) => total + Number(game.wordCount || 0), 0);
 
   const averageWords = history.length ? totalWords / history.length : 0;
 
-  const bestPuzzle = history.length ? Math.max(...history.map((game) => game.words)) : 0;
+  const bestPuzzle = history.length ? Math.max(...history.map((game) => Number(game.wordCount || 0))) : 0;
 
   return (
     <div>
@@ -54,34 +59,36 @@ export default function AnalyticsPage({ user }) {
           <div className="mt-5 space-y-4">
             {loading ? (
               <p className="text-sm text-brand-muted">Loading...</p>
+            ) : error ? (
+              <p className="text-sm text-brand-muted">{error}</p>
             ) : history.length === 0 ? (
               <p className="text-sm text-brand-muted">No previous games yet.</p>
             ) : (
-              history
-                .slice(-4)
-                .reverse()
-                .map((game) => (
-                  <div key={game.puzzleId}>
-                    <div className="mb-1 flex justify-between text-xs">
-                      <span className="font-semibold">Daily #{String(game.puzzleId).padStart(2, "0")}</span>
+              history.slice(0, 4).map((game) => (
+                <div key={`${game.userId}-${game.gameId}`}>
+                  <div className="mb-1 flex justify-between text-xs">
+                    <span className="font-semibold">
+                      {game.mode === "daily" ? `Daily #${String(game.puzzleId || game.gameId).padStart(2, "0")}` : `Game #${game.gameId}`}
+                    </span>
 
-                      <span className="text-brand-muted">{game.difficulty}%</span>
-                    </div>
-
-                    <div className="h-2 rounded-full bg-background">
-                      <div
-                        className="h-full rounded-full bg-brand-pink"
-                        style={{
-                          width: `${game.difficulty}%`,
-                        }}
-                      />
-                    </div>
+                    <span className="text-brand-muted">{game.difficulty ?? 50}%</span>
                   </div>
-                ))
+
+                  <div className="h-2 rounded-full bg-background">
+                    <div
+                      className="h-full rounded-full bg-brand-pink"
+                      style={{
+                        width: `${game.difficulty ?? 50}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))
             )}
           </div>
         </div>
       </div>
+
       <RoundDetails />
     </div>
   );

@@ -12,7 +12,9 @@ export default function LeaderboardPage({ user }) {
     });
   }, []);
 
-  const position = players.findIndex((player) => player.id === user.id) + 1;
+  const currentUserId = user?.id || user?.userId;
+
+  const position = players.findIndex((player) => player.userId === currentUserId) + 1;
 
   return (
     <div>
@@ -34,9 +36,9 @@ export default function LeaderboardPage({ user }) {
 
           {players.map((player, index) => (
             <div
-              key={player.id}
+              key={player.userId}
               className={`grid grid-cols-[52px_1fr_90px_90px_80px] items-center border-b border-brand-border px-4 py-4 text-sm ${
-                player.id === user.id ? "bg-brand-accent/10" : ""
+                player.userId === currentUserId ? "bg-brand-accent/10" : ""
               }`}
             >
               <span className="font-black text-brand-muted">{String(index + 1).padStart(2, "0")}</span>
@@ -55,13 +57,14 @@ export default function LeaderboardPage({ user }) {
         <div className="self-start rounded-2xl border border-brand-border bg-brand-card p-5">
           <div className="flex items-center gap-2 text-brand-tertiary">
             <Trophy size={18} />
+
             <span className="font-bold">Your position</span>
           </div>
 
           <div className="mt-2 text-5xl font-black text-brand-accent">#{position || "-"}</div>
 
           <p className="mt-2 text-sm text-brand-muted">
-            {user.best} points • {user.words} words
+            {user?.best || 0} points • {user?.words || 0} words
           </p>
         </div>
       </div>
