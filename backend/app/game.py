@@ -67,38 +67,15 @@ def is_word(word):
         return reverse
     return None
 
-
-def cascade_columns(grid, cells):
-    rows = len(grid)
+def replace_cells(grid, cells):
     next_grid = [row[:] for row in grid]
-    removed, new_cells = {}, []
+    new_cells = []
 
     for row, col in cells:
-        if col not in removed:
-            removed[col] = set()
-        removed[col].add(row)
-
-    for c, removed_rows in removed.items():
-        survivors = []
-        for r in range(rows - 1, -1, -1):
-            if r not in removed_rows:
-                survivors.append(grid[r][c])
-
-        incoming = []
-        for _ in range(len(removed_rows)):
-            incoming.append(random.choice(LETTERS))
-
-        column_values = survivors + incoming
-        column_values = column_values[-rows:]
-        column_values.reverse()
-
-        for r in range(rows):
-            next_grid[r][col] = column_values[r]
-            if r < len(removed_rows):
-                new_cells.append([r, col])
+        next_grid[row][col] = random.choice(LETTERS)
+        new_cells.append([row, col])
 
     return next_grid, new_cells
-
 
 def collect_word(state, cells):
     raw = validate_cells(state.grid, cells)
@@ -124,7 +101,7 @@ def collect_word(state, cells):
         }
 
     points = len(candidate) * 10
-    collapsed_grid, new_cells = cascade_columns(state.grid, cells)
+    collapsed_grid, new_cells = replace_cells(state.grid, cells)
 
     state.grid = collapsed_grid
     state.score += points

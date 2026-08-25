@@ -3,13 +3,13 @@ import { Clock3, Pause, Play, RotateCcw, Trophy, Zap } from "lucide-react";
 import GameStat from "../components/GameStat.jsx";
 import GameGrid from "../components/GameGrid.jsx";
 import WordList from "../components/WordList.jsx";
-import api from "../lib/api/api.js";
+import api from "../api.js";
 
 export const GRID_SIZES = [5, 6, 7, 8, 9];
 export const DEFAULT_GRID_SIZE = 5;
 export const ROUND_SECONDS = 90;
 
-export default function PlayPage({ setUser, mode = "free", dailyPuzzle = null }) {
+export default function PlayPage({ user, setUser, mode = "free", dailyPuzzle = null }) {
   const [gridSize, setGridSize] = useState(DEFAULT_GRID_SIZE);
   const [restartKey, setRestartKey] = useState(0);
   const [grid, setGrid] = useState([]);
@@ -40,7 +40,7 @@ export default function PlayPage({ setUser, mode = "free", dailyPuzzle = null })
 
     async function startGame() {
       try {
-        const res = await api.post("/api/game/start", { gridSize, mode, puzzleId: dailyPuzzle?.id || null });
+        const res = await api.post("/api/game/start", { username: user.username, gridSize, mode, puzzleId: dailyPuzzle?.id || null });
         const data = res.data;
 
         setGrid(data.grid);
@@ -55,7 +55,7 @@ export default function PlayPage({ setUser, mode = "free", dailyPuzzle = null })
     }
 
     startGame();
-  }, [gridSize, restartKey, mode, dailyPuzzle?.id]);
+  }, [user.username, gridSize, restartKey, mode, dailyPuzzle?.id]);
 
   useEffect(() => {
     if (paused || seconds <= 0 || loading || finished) return;
@@ -85,7 +85,7 @@ export default function PlayPage({ setUser, mode = "free", dailyPuzzle = null })
 
     async function finishGame() {
       try {
-        const res = await api.post("/api/game/finish", { gameId });
+        const res = await api.post("/api/game/finish", { username: user.username, gameId });
         const data = res.data;
 
         if (!data.accepted) {
@@ -188,11 +188,7 @@ export default function PlayPage({ setUser, mode = "free", dailyPuzzle = null })
 
     async function collect() {
       try {
-        const res = await api.post("/api/game/collect", {
-          gameId,
-          cells: currentSelection,
-        });
-
+        const res = await api.post("/api/game/collect", { username: user.username, gameId, cells: currentSelection });
         const result = res.data;
 
         if (!result.accepted) {

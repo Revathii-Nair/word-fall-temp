@@ -4,7 +4,7 @@ import PageTitle from "../components/PageTitle.jsx";
 import StatCard from "../components/StatCard.jsx";
 import ChartCard from "../components/ChartCard.jsx";
 import RoundDetails from "../components/RoundDetails.jsx";
-import api from "../lib/api/api.js";
+import api from "../api.js";
 
 export default function AnalyticsPage({ user }) {
   const [history, setHistory] = useState([]);
@@ -14,7 +14,7 @@ export default function AnalyticsPage({ user }) {
   useEffect(() => {
     async function loadHistory() {
       try {
-        const response = await api.get("/api/user/history");
+        const response = await api.get("/api/user/history", { params: { username: user.username } });
         setHistory(response.data || []);
       } catch (err) {
         setError(err.response?.data?.detail || err.message || "Unable to load game history.");
@@ -24,7 +24,7 @@ export default function AnalyticsPage({ user }) {
     }
 
     loadHistory();
-  }, []);
+  }, [user]);
 
   const totalWords = history.reduce((total, game) => total + Number(game.wordCount || 0), 0);
 
@@ -51,7 +51,7 @@ export default function AnalyticsPage({ user }) {
       </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[1.5fr_1fr]">
-        <ChartCard />
+        <ChartCard user={user} />
 
         <div className="rounded-2xl border border-brand-border bg-brand-card p-5">
           <h3 className="font-bold">Puzzle difficulty</h3>
@@ -65,7 +65,7 @@ export default function AnalyticsPage({ user }) {
               <p className="text-sm text-brand-muted">No previous games yet.</p>
             ) : (
               history.slice(0, 4).map((game) => (
-                <div key={`${game.userId}-${game.gameId}`}>
+                <div key={`${game.gameId}`}>
                   <div className="mb-1 flex justify-between text-xs">
                     <span className="font-semibold">
                       {game.mode === "daily" ? `Daily #${String(game.puzzleId || game.gameId).padStart(2, "0")}` : `Game #${game.gameId}`}
@@ -89,7 +89,7 @@ export default function AnalyticsPage({ user }) {
         </div>
       </div>
 
-      <RoundDetails />
+      <RoundDetails user={user} />
     </div>
   );
 }

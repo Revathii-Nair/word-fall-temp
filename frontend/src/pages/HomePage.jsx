@@ -1,16 +1,15 @@
 import { Flame, Gamepad2, Play, Sparkles, Target, Trophy, WandSparkles, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import PageTitle from "../components/PageTitle.jsx";
+
 import StatCard from "../components/StatCard.jsx";
-import MiniGrid from "../components/MiniGrid.jsx";
-import Feature from "../components/Feature.jsx";
+
 export default function HomePage({ user }) {
   const navigate = useNavigate();
   return (
     <>
       <div className="w-full  mb-8 mt-3">
         <h1 className="text-3xl font-bold ">
-          Welcome back, <span className="text-brand-accent">{user.name || "Player"}</span>!
+          Welcome back, <span className="text-brand-accent">{user.username || "Player"}</span>!
         </h1>
       </div>
       <div className="flex flex-auto gap-6">
@@ -55,31 +54,11 @@ export default function HomePage({ user }) {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                navigate("/profile");
-              }}
-              className="flex-1 rounded-xl border border-brand-border px-4 py-4 text-lg font-bold text-brand-muted min-w-[200px] hover:bg-brand-border/20 transition-all"
-            >
-              Profile
-            </button>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
                 navigate("/analytics");
               }}
               className="flex-1 rounded-xl border border-brand-border px-4 py-4 text-lg font-bold text-brand-muted min-w-[200px] hover:bg-brand-border/20 transition-all"
             >
               Analytics
-            </button>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate("/settings");
-              }}
-              className="flex-1 rounded-xl border border-brand-border px-4 py-4 text-lg font-bold text-brand-muted min-w-[200px] hover:bg-brand-border/20 transition-all"
-            >
-              Settings
             </button>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Trophy } from "lucide-react";
 import PageTitle from "../components/PageTitle.jsx";
-import api from "../lib/api/api.js";
+import api from "../api.js";
 
 export default function LeaderboardPage({ user }) {
   const [players, setPlayers] = useState([]);
@@ -43,7 +43,7 @@ export default function LeaderboardPage({ user }) {
             >
               <span className="font-black text-brand-muted">{String(index + 1).padStart(2, "0")}</span>
 
-              <span className="font-bold">{player.name}</span>
+              <span className="font-bold">{player.userId}</span>
 
               <span className="font-black text-brand-accent">{player.best}</span>
 

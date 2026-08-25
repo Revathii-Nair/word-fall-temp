@@ -2,7 +2,7 @@ import time
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .game import GRID_SIZES, collect_word, new_game
-from .data import calculate_difficulty,get_game_history,get_history_with_difficulty,get_leaderboard,get_user,save_game
+from .data import get_daily_puzzle,calculate_difficulty,get_game_history,get_history_with_difficulty,get_leaderboard,get_user,save_game
 
 app = FastAPI()
 app.add_middleware(
@@ -16,7 +16,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-CURRENT_USER_ID = "user-001"
 active_games = {}
 next_game_id = 1
 
@@ -27,13 +26,13 @@ def root():
 
 
 @app.get("/api/user")
-def user():
-    return get_user(CURRENT_USER_ID)
+def user(username):
+    return get_user(username)
 
 
 @app.get("/api/user/history")
-def user_history():
-    return get_history_with_difficulty(CURRENT_USER_ID)
+def user_history(username):
+    return get_history_with_difficulty(username)
 
 
 @app.get("/api/leaderboard")
@@ -43,6 +42,7 @@ def leaderboard():
 
 @app.post("/api/game/start")
 def start_game(grid: dict):
+    username = grid.get("username")
     global next_game_id
 
     grid_size = grid.get("gridSize", 5)
@@ -59,7 +59,7 @@ def start_game(grid: dict):
     game = new_game(grid_size)
 
     active_games[game_id] = {
-        "userId": CURRENT_USER_ID,
+        "userId": username,
         "mode": mode,
         "gridSize": grid_size,
         "game": game,
@@ -79,6 +79,7 @@ def start_game(grid: dict):
 @app.post("/api/game/reset")
 def reset_game(grid: dict):
     global next_game_id
+    username = grid.get("username")
 
     grid_size = grid.get("gridSize", 5)
 
@@ -90,7 +91,7 @@ def reset_game(grid: dict):
     game = new_game(grid_size)
 
     active_games[game_id] = {
-        "userId": CURRENT_USER_ID,
+        "userId": username,
         "mode": "free",
         "gridSize": grid_size,
         "game": game,
@@ -109,6 +110,7 @@ def reset_game(grid: dict):
 
 @app.post("/api/game/collect")
 def collect(grid: dict):
+    username = grid.get("username")
     game_id = grid.get("gameId")
     cells = grid.get("cells", [])
     active_game = active_games.get(game_id)
@@ -116,27 +118,28 @@ def collect(grid: dict):
     if not active_game:
         return {"accepted": False, "validation": {"reason": "Game not found."}}
 
-    if active_game["userId"] != CURRENT_USER_ID:
+    if active_game["userId"] != username:
         return {"accepted": False, "validation": { "reason": "You cannot access this game."}}
 
     return collect_word(active_game["game"], cells)
 
 @app.post("/api/game/finish")
-def finish_game(game_data: dict):
-    game_id = game_data.get("gameId")
+def finish_game(grid: dict):
+    username = grid.get("username")
+    game_id = grid.get("gameId")
     active_game = active_games.get(game_id)
 
     if not active_game:
         return {"accepted": False, "message": "Game not found."}
 
-    if active_game["userId"] != CURRENT_USER_ID:
+    if active_game["userId"] != username:
         return {"accepted": False, "message": "You cannot finish this game."}
 
     game = active_game["game"]
     duration = int(time.time() - active_game["startedAt"])
 
     saved_game = save_game(
-        user_id=CURRENT_USER_ID,
+        username=username,
         game_id=game_id,
         mode=active_game["mode"],
         grid_size=active_game["gridSize"],
@@ -151,7 +154,8 @@ def finish_game(game_data: dict):
 
 @app.post("/api/daily/difficulty")
 def daily_difficulty(grid: dict):
-    history = get_game_history(CURRENT_USER_ID)
+    username = grid.get("username")
+    history = get_game_history(username)
     words = grid.get("words", 0)
 
     if not history:
@@ -166,5 +170,21 @@ def daily_difficulty(grid: dict):
     return {
         "words": words,
         "averageWords": round(average, 2),
-        "difficulty": calculate_difficulty(CURRENT_USER_ID, words)
+        "difficulty": calculate_difficulty(username, words)
+    }
+
+
+@app.get("/api/daily")
+def daily_puzzle(puzzleId: int):
+    puzzle = get_daily_puzzle(puzzleId)
+
+    if not puzzle:
+        return {
+            "accepted": False,
+            "message": "Daily puzzle not found.",
+        }
+
+    return {
+        "accepted": True,
+        "puzzle": puzzle,
     }

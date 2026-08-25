@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
-import api from "../lib/api/api.js";
+import api from "../api.js";
 
-export default function ChartCard() {
+export default function ChartCard({ user }) {
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
     api
-      .get("/api/user/history")
+      .get("/api/user/history", { params: { username: user.username } })
       .then((response) => {
         setHistory(response.data || []);
       })
       .catch((error) => {
         console.error("Unable to load score history:", error);
       });
-  }, []);
+  }, [user]);
 
   const rounds = history.slice(-12);
 
@@ -48,7 +48,7 @@ export default function ChartCard() {
           <div className="flex h-full w-full items-center justify-center text-sm text-brand-muted">No game history yet.</div>
         ) : (
           rounds.map((game, index) => (
-            <div key={`${game.userId}-${game.gameId}`} className="group flex h-full flex-1 items-end">
+            <div key={`${game.username}-${game.gameId}`} className="group flex h-full flex-1 items-end">
               <div
                 className="w-full rounded-t-md bg-brand-secondary/60 transition group-hover:bg-brand-accent"
                 style={{

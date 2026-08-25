@@ -3,36 +3,31 @@ from datetime import datetime, timezone
 import boto3
 
 AWS_REGION = "ap-south-1"
-USERS_TABLE_NAME = "WordQuestUsers"
-GAMES_TABLE_NAME = "WordQuestGames"
 
 dynamodb = boto3.resource("dynamodb", region_name=AWS_REGION)
+users_table = dynamodb.Table("WordQuestUsers")
+games_table = dynamodb.Table("WordQuestGames")
+daily_table = dynamodb.Table("WordQuestDaily")
 
-users_table = dynamodb.Table(USERS_TABLE_NAME)
-games_table = dynamodb.Table(GAMES_TABLE_NAME)
-
-def get_user(user_id):
-    response = users_table.get_item(Key={"userId": user_id,})
+def get_user(username):
+    response = users_table.get_item(Key={"username": username})
     user = response.get("Item")
-
-    if user:
+    if user: 
         return user
 
-    user = {"userId": user_id, "name": "WordQuest Player", "email": "", "best": 0, "words": 0, "rounds": 0, "streak": 0}
+    user = {"username": username,"best": 0,"words": 0,"rounds": 0,"streak": 0,}
     users_table.put_item(Item=user)
     return user
 
-def update_user_after_game(user_id,score,word_count):
-    user = get_user(user_id)
+def update_user_after_game(username,score,word_count):
+    user = get_user(username)
     current_best = int(user.get("best", 0))
     current_words = int(user.get("words", 0))
     current_rounds = int(user.get("rounds", 0))
     new_best = max(current_best,score)
 
     updated_user = {
-        "userId": user_id,
-        "name": user.get("name","WordQuest Player"),
-        "email": user.get("email",""),
+        "username": username,
         "best": new_best,
         "words": current_words + word_count,
         "rounds": current_rounds + 1,
@@ -42,7 +37,7 @@ def update_user_after_game(user_id,score,word_count):
     users_table.put_item(Item=updated_user)
     return updated_user
 
-def save_game(user_id,game_id, mode, grid_size, score, words, duration):
+def save_game(username,game_id, mode, grid_size, score, words, duration):
     word_count = len(words)
     word_scores = {}
     highest_word = ""
@@ -65,7 +60,7 @@ def save_game(user_id,game_id, mode, grid_size, score, words, duration):
         common_word = counts.most_common(1)[0][0]
 
     game = {
-        "userId": user_id,
+        "username": username,
         "gameId": game_id,
         "date": datetime.now(timezone.utc).isoformat(),
         "mode": mode,
@@ -82,13 +77,13 @@ def save_game(user_id,game_id, mode, grid_size, score, words, duration):
     }
 
     games_table.put_item(Item=game)
-    update_user_after_game(user_id,score,word_count)
+    update_user_after_game(username,score,word_count)
     return game
 
-def get_game_history(user_id):
+def get_game_history(username):
     response = games_table.query(
-        KeyConditionExpression="userId = :userId", 
-        ExpressionAttributeValues={":userId": user_id}
+        KeyConditionExpression="username = :username",
+        ExpressionAttributeValues={":username": username}
         )
     
     games = response.get("Items",[])
@@ -96,15 +91,15 @@ def get_game_history(user_id):
 
     return games
 
-def get_history_with_difficulty(user_id):
-    history = get_game_history(user_id)
+def get_history_with_difficulty(username):
+    history = get_game_history(username)
     for game in history:
-        game["difficulty"] = calculate_difficulty(user_id,game.get("wordCount", 0))
+        game["difficulty"] = calculate_difficulty(username,game.get("wordCount", 0))
 
     return history
 
-def calculate_difficulty(user_id, words):
-    history = get_game_history(user_id)
+def calculate_difficulty(username, words):
+    history = get_game_history(username)
     if not history:
         return 50
 
@@ -131,17 +126,23 @@ def get_leaderboard():
     for position, user in enumerate(users,start=1):
         leaderboard.append({
             "position": position,
-            "userId": user.get("userId", ""),
-            "name": user.get("name", "WordQuest Player"),
+            "username": user.get("username", ""),
             "best": int(user.get("best", 0)),
             "words": int(user.get("words", 0)),
             "rounds": int(user.get("rounds", 0)),
         })
     return leaderboard
 
-def get_user_position(user_id):
+def get_user_position(username):
     leaderboard = get_leaderboard()
     for player in leaderboard:
-        if player["userId"] == user_id:
+        if player["username"] == username:
             return player["position"]
     return None
+
+def get_daily_puzzle(puzzle_id):
+    response = daily_table.get_item(
+        Key={"puzzleId": puzzle_id}
+    )
+
+    return response.get("Item")

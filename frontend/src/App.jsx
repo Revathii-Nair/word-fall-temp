@@ -1,33 +1,46 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { getCurrentUser } from "aws-amplify/auth";
+
 import Header from "./components/Header.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import PlayPage from "./pages/PlayPage.jsx";
 import LeaderboardPage from "./pages/LeaderboardPage.jsx";
-import ProfilePage from "./pages/ProfilePage.jsx";
 import AnalyticsPage from "./pages/AnalyticsPage.jsx";
 import HowToPlayPage from "./pages/HowToPlayPage.jsx";
-import SettingsPage from "./pages/SettingsPage.jsx";
 import SignInPage from "./pages/SignInPage.jsx";
 import SignUpPage from "./pages/SignUpPage.jsx";
-import api from "./lib/api/api.js";
+import api from "./api.js";
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dark, setDark] = useState(true);
   const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
     document.documentElement.classList.toggle("light", !dark);
   }, [dark]);
 
   useEffect(() => {
-    api.get("/api/user").then(({ data }) => {
-      setUser(data);
-    });
+    async function loadUser() {
+      try {
+        const cognitoUser = await getCurrentUser();
+        const response = await api.get("/api/user", { params: { username: cognitoUser.username } });
+        console.log(response.data);
+        setUser(response.data);
+      } catch (error) {
+        console.log("No authenticated Cognito user:", error);
+        setUser(null);
+      } finally {
+        setAuthLoading(false);
+      }
+    }
+
+    loadUser();
   }, []);
 
-  if (!user) {
+  if (authLoading) {
     return (
       <div className="grid min-h-screen place-items-center bg-background text-foreground">
         <div className="text-sm font-bold text-brand-muted">Loading...</div>
@@ -38,14 +51,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-background text-foreground">
-        <Header
-          {...{
-            menuOpen,
-            setMenuOpen,
-            dark,
-            setDark,
-          }}
-        />
+        {user && <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} dark={dark} setDark={setDark} />}
 
         <div className="mx-auto w-full max-w-[1500px] px-4 pb-10 pt-5 sm:px-6 lg:px-8">
           <Routes>
@@ -53,19 +59,21 @@ export default function App() {
 
             <Route path="/signup" element={<SignUpPage setUser={setUser} />} />
 
-            <Route path="/" element={<HomePage user={user} />} />
+            {user ? (
+              <>
+                <Route path="/" element={<HomePage user={user} />} />
 
-            <Route path="/play" element={<PlayPage user={user} setUser={setUser} />} />
+                <Route path="/play" element={<PlayPage user={user} setUser={setUser} />} />
 
-            <Route path="/leaderboard" element={<LeaderboardPage user={user} />} />
+                <Route path="/leaderboard" element={<LeaderboardPage user={user} />} />
 
-            <Route path="/profile" element={<ProfilePage user={user} />} />
+                <Route path="/analytics" element={<AnalyticsPage user={user} />} />
 
-            <Route path="/analytics" element={<AnalyticsPage user={user} />} />
-
-            <Route path="/how-to-play" element={<HowToPlayPage />} />
-
-            <Route path="/settings" element={<SettingsPage dark={dark} setDark={setDark} />} />
+                <Route path="/how-to-play" element={<HowToPlayPage />} />
+              </>
+            ) : (
+              <Route path="*" element={<SignInPage setUser={setUser} />} />
+            )}
           </Routes>
         </div>
       </div>

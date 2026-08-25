@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
+import { Eye, EyeOff, LockKeyhole, Mail, LogIn } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "../lib/api/api.js";
+import { signIn } from "aws-amplify/auth";
 
-export default function SignInPage({ setUser }) {
+export default function SignInPage() {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -14,20 +14,15 @@ export default function SignInPage({ setUser }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     setLoading(true);
     setError("");
 
     try {
-      const response = await api.post("/api/auth/login", {
-        email,
-        password,
-      });
-
-      setUser(response.data);
-      navigate("/");
-    } catch (err) {
-      setError(err.response?.data?.detail || err.message || "Unable to sign in.");
+      await signIn({ username, password });
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Unable to sign in:", error);
+      setError(error.message || "Unable to sign in.");
     }
 
     setLoading(false);
@@ -45,16 +40,16 @@ export default function SignInPage({ setUser }) {
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>
-              <label className="mb-2 block text-sm font-bold">Email</label>
+              <label className="mb-2 block text-sm font-bold">Username or Email</label>
 
               <div className="relative">
                 <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted" />
 
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="you@example.com"
+                  type="text"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  placeholder="Username or email"
                   required
                   className="w-full rounded-xl border border-brand-border bg-background py-3 pl-10 pr-4 text-sm outline-none focus:border-brand-accent"
                 />
@@ -93,8 +88,9 @@ export default function SignInPage({ setUser }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-brand-accent px-4 py-3 text-sm font-black text-background disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-accent px-4 py-3 text-sm font-black text-background disabled:cursor-not-allowed disabled:opacity-50"
             >
+              <LogIn size={18} />
               {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
