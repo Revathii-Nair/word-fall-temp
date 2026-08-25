@@ -1,10 +1,10 @@
-import { Flame, Gamepad2, Play, Sparkles, Target, Trophy, WandSparkles, Zap } from "lucide-react";
+import { Flame, Target, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
 import StatCard from "../components/StatCard.jsx";
 
 export default function HomePage({ user }) {
   const navigate = useNavigate();
+
   return (
     <>
       <div className="w-full  mb-8 mt-3">
@@ -12,9 +12,12 @@ export default function HomePage({ user }) {
           Welcome back, <span className="text-brand-accent">{user.username || "Player"}</span>!
         </h1>
       </div>
+
       <div className="flex flex-auto gap-6">
         <StatCard label="Personal best" value={user.best} sub="points in a single run" icon={Trophy} accent="brand-tertiary" />
+
         <StatCard label="Current streak" value={`${user.streak} days`} sub="keep the daily chain alive" icon={Flame} accent="brand-pink" />
+
         <StatCard label="Words found" value={user.words} sub="across completed rounds" icon={Target} />
       </div>
 
@@ -22,41 +25,29 @@ export default function HomePage({ user }) {
         <div className="flex-1 rounded-3xl border border-brand-border bg-brand-card p-4 flex flex-col items-center justify-center">
           <div className="flex flex-wrap gap-5 justify-center w-full">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate("/play");
-              }}
-              className="flex-1 rounded-xl border border-brand-accent bg-brand-accent/10 px-4 py-4 text-lg font-bold text-brand-accent min-w-[200px] hover:bg-brand-accent/20 transition-all"
+              onClick={() => navigate("/play?daily=true")}
+              className="min-w-[200px] flex-1 rounded-xl border border-brand-accent bg-brand-accent/10 px-4 py-4 text-lg font-bold text-brand-accent transition-all hover:bg-brand-accent/20"
             >
               Play daily puzzle
             </button>
 
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate("/how-to-play");
-              }}
-              className="flex-1 rounded-xl border border-brand-border px-4 py-4 text-lg font-bold text-brand-muted min-w-[200px] hover:bg-brand-border/20 transition-all"
+              onClick={() => navigate("/how-to-play")}
+              className="min-w-[200px] flex-1 rounded-xl border border-brand-border px-4 py-4 text-lg font-bold text-brand-muted transition-all hover:bg-brand-border/20"
             >
               How it works
             </button>
 
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate("/leaderboard");
-              }}
-              className="flex-1 rounded-xl border border-brand-border px-4 py-4 text-lg font-bold text-brand-muted min-w-[200px] hover:bg-brand-border/20 transition-all"
+              onClick={() => navigate("/leaderboard")}
+              className="min-w-[200px] flex-1 rounded-xl border border-brand-border px-4 py-4 text-lg font-bold text-brand-muted transition-all hover:bg-brand-border/20"
             >
               Leaderboard
             </button>
 
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate("/analytics");
-              }}
-              className="flex-1 rounded-xl border border-brand-border px-4 py-4 text-lg font-bold text-brand-muted min-w-[200px] hover:bg-brand-border/20 transition-all"
+              onClick={() => navigate("/analytics")}
+              className="min-w-[200px] flex-1 rounded-xl border border-brand-border px-4 py-4 text-lg font-bold text-brand-muted transition-all hover:bg-brand-border/20"
             >
               Analytics
             </button>
@@ -68,7 +59,7 @@ export default function HomePage({ user }) {
         <h2 className="text-2xl font-bold text-brand-accent text-center">About Wordfall</h2>
 
         <p className="text-brand-muted text-sm leading-relaxed text-center max-w-3xl mx-auto">
-          Wordfall is a fast‑paced word‑finding challenge where letters cascade into place and every second counts. Build words, chain combos, and
+          Wordfall is a fast-paced word-finding challenge where letters cascade into place and every second counts. Build words, chain combos, and
           climb your streak as you race against time. The longer you survive, the more intense the board becomes — pushing your vocabulary and
           reflexes to the limit.
         </p>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Clock3, Pause, Play, RotateCcw, Trophy, Zap } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import GameStat from "../components/GameStat.jsx";
 import GameGrid from "../components/GameGrid.jsx";
 import WordList from "../components/WordList.jsx";
@@ -9,11 +10,14 @@ export const GRID_SIZES = [5, 6, 7, 8, 9];
 export const DEFAULT_GRID_SIZE = 5;
 export const ROUND_SECONDS = 90;
 
-export default function PlayPage({ user, setUser, mode = "free", dailyPuzzle = null }) {
+export default function PlayPage({ user, setUser }) {
+  const [searchParams] = useSearchParams();
+  const isDaily = searchParams.get("daily") === "true";
   const [gridSize, setGridSize] = useState(DEFAULT_GRID_SIZE);
   const [restartKey, setRestartKey] = useState(0);
   const [grid, setGrid] = useState([]);
   const [gameId, setGameId] = useState(null);
+  const [puzzleId, setPuzzleId] = useState(null);
   const [paused, setPaused] = useState(false);
   const [seconds, setSeconds] = useState(ROUND_SECONDS);
   const [score, setScore] = useState(0);
@@ -35,19 +39,44 @@ export default function PlayPage({ user, setUser, mode = "free", dailyPuzzle = n
     setScore(0);
     setFound([]);
     setGameId(null);
+    setPuzzleId(null);
     setFinished(false);
-    setMessage("Drag through adjacent letters to build a word.");
+
+    if (isDaily) {
+      setMessage("Loading today's puzzle...");
+    } else {
+      setMessage("Drag through adjacent letters to build a word.");
+    }
 
     async function startGame() {
       try {
-        const res = await api.post("/api/game/start", { username: user.username, gridSize, mode, puzzleId: dailyPuzzle?.id || null });
+        const res = await api.post("/api/game/start", {
+          username: user.username,
+          gridSize,
+          mode: isDaily ? "daily" : "free",
+          puzzleId: isDaily ? 1 : null,
+        });
+
         const data = res.data;
+
+        if (!data.accepted) {
+          setError(data.message || "Unable to start game.");
+          setLoading(false);
+          return;
+        }
 
         setGrid(data.grid);
         setGameId(data.gameId);
+        setPuzzleId(data.puzzleId || null);
         setScore(data.score);
         setFound(data.found);
         setLoading(false);
+
+        if (isDaily) {
+          setMessage(`Daily #${data.puzzleId || 1}`);
+        } else {
+          setMessage("Drag through adjacent letters to build a word.");
+        }
       } catch (err) {
         setError(err.response?.data?.detail || err.message || "Unable to start game.");
         setLoading(false);
@@ -55,10 +84,12 @@ export default function PlayPage({ user, setUser, mode = "free", dailyPuzzle = n
     }
 
     startGame();
-  }, [user.username, gridSize, restartKey, mode, dailyPuzzle?.id]);
+  }, [user.username, gridSize, restartKey, isDaily]);
 
   useEffect(() => {
-    if (paused || seconds <= 0 || loading || finished) return;
+    if (paused || seconds <= 0 || loading || finished) {
+      return;
+    }
 
     const timer = window.setInterval(() => {
       setSeconds((value) => Math.max(value - 1, 0));
@@ -67,7 +98,7 @@ export default function PlayPage({ user, setUser, mode = "free", dailyPuzzle = n
     return () => {
       window.clearInterval(timer);
     };
-  }, [paused, loading, finished]);
+  }, [paused, seconds, loading, finished]);
 
   useEffect(() => {
     if (error) {
@@ -112,7 +143,7 @@ export default function PlayPage({ user, setUser, mode = "free", dailyPuzzle = n
     }
 
     finishGame();
-  }, [seconds, gameId, loading, finished, setUser]);
+  }, [seconds, gameId, loading, finished, user.username, setUser]);
 
   const reset = () => {
     setSelected([]);
@@ -122,13 +153,22 @@ export default function PlayPage({ user, setUser, mode = "free", dailyPuzzle = n
     setScore(0);
     setFound([]);
     setGameId(null);
+    setPuzzleId(null);
     setFinished(false);
     setError("");
-    setMessage("Drag through adjacent letters to build a word.");
+
+    if (isDaily) {
+      setMessage("Loading today's puzzle...");
+    } else {
+      setMessage("Drag through adjacent letters to build a word.");
+    }
+
     setRestartKey((value) => value + 1);
   };
 
   const changeGridSize = (size) => {
+    if (isDaily) return;
+
     setGridSize(size);
     setSelected([]);
     setNewCells([]);
@@ -137,6 +177,7 @@ export default function PlayPage({ user, setUser, mode = "free", dailyPuzzle = n
     setScore(0);
     setFound([]);
     setGameId(null);
+    setPuzzleId(null);
     setFinished(false);
     setError("");
     setMessage(`New ${size}x${size} random grid.`);
@@ -228,24 +269,27 @@ export default function PlayPage({ user, setUser, mode = "free", dailyPuzzle = n
         <div>
           <h1 className="text-4xl font-black tracking-tight">Wordfall</h1>
 
-          {mode === "daily" && dailyPuzzle?.id && <p className="mt-1 text-sm font-bold text-brand-accent">Daily #{dailyPuzzle.id}</p>}
+          {isDaily && puzzleId && <p className="mt-1 text-sm font-bold text-brand-accent">Daily #{puzzleId}</p>}
+          {!isDaily && <p className="mt-1 text-sm text-brand-muted">Free Play</p>}
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <div className="flex items-center gap-1 rounded-xl border border-brand-border bg-brand-card p-1">
-            {GRID_SIZES.map((size) => (
-              <button
-                key={size}
-                type="button"
-                onClick={() => changeGridSize(size)}
-                className={`rounded-lg px-2.5 py-1.5 text-xs font-black ${
-                  gridSize === size ? "bg-brand-accent text-background" : "text-brand-muted hover:text-brand-accent"
-                }`}
-              >
-                {size}x{size}
-              </button>
-            ))}
-          </div>
+          {!isDaily && (
+            <div className="flex items-center gap-1 rounded-xl border border-brand-border bg-brand-card p-1">
+              {GRID_SIZES.map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => changeGridSize(size)}
+                  className={`rounded-lg px-2.5 py-1.5 text-xs font-black ${
+                    gridSize === size ? "bg-brand-accent text-background" : "text-brand-muted hover:text-brand-accent"
+                  }`}
+                >
+                  {size}x{size}
+                </button>
+              ))}
+            </div>
+          )}
 
           <button
             type="button"
