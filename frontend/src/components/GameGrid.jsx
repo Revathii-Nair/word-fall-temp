@@ -2,94 +2,63 @@ import { useRef } from "react";
 
 export default function GameGrid({ grid, selected, newCells, disabled, onStart, onMove, onFinish }) {
   const boardRef = useRef(null);
-
   const dragging = useRef(false);
+  const cols = grid[0]?.length || 0;
 
-  const pointerId = useRef(null);
+  const isSelected = (row, col) => {
+    return selected.some(([r, c]) => r === row && c === col);
+  };
 
-  const rows = grid.length;
+  const isNew = (row, col) => {
+    return newCells.some(([r, c]) => r === row && c === col);
+  };
 
-  const cols = grid[0]?.length ?? 0;
-
-  const isSelected = (row, col) => selected.some(([r, c]) => r === row && c === col);
-
-  const isNew = (row, col) => newCells.some(([r, c]) => r === row && c === col);
-
-  const getCellFromPoint = (clientX, clientY) => {
-    const element = document.elementFromPoint(clientX, clientY);
-
-    const cell = element?.closest?.('[data-grid-cell="true"]');
+  const getCell = (x, y) => {
+    const element = document.elementFromPoint(x, y);
+    const cell = element?.closest("[data-grid-cell]");
 
     if (!cell || !boardRef.current?.contains(cell)) {
       return null;
     }
 
-    const row = Number(cell.dataset.row);
-
-    const col = Number(cell.dataset.col);
-
-    if (!Number.isInteger(row) || !Number.isInteger(col)) {
-      return null;
-    }
-
-    return [row, col];
+    return [Number(cell.dataset.row), Number(cell.dataset.col)];
   };
 
   const handlePointerDown = (event, row, col) => {
-    if (disabled) {
-      return;
-    }
+    if (disabled) return;
 
     event.preventDefault();
-
     dragging.current = true;
-
-    pointerId.current = event.pointerId;
-
     event.currentTarget.setPointerCapture?.(event.pointerId);
 
     onStart([row, col]);
   };
 
   const handlePointerMove = (event) => {
-    if (!dragging.current || disabled) {
-      return;
+    if (!dragging.current || disabled) return;
+    const cell = getCell(event.clientX, event.clientY);
+
+    if (cell) {
+      onMove(cell);
     }
-
-    const cell = getCellFromPoint(event.clientX, event.clientY);
-
-    if (!cell) {
-      return;
-    }
-
-    onMove(cell);
   };
 
   const handlePointerUp = (event) => {
-    if (!dragging.current) {
-      return;
-    }
+    if (!dragging.current) return;
 
     event.preventDefault();
-
-    const cell = getCellFromPoint(event.clientX, event.clientY);
+    const cell = getCell(event.clientX, event.clientY);
 
     if (cell) {
       onMove(cell);
     }
 
     dragging.current = false;
-
-    pointerId.current = null;
-
     onFinish();
   };
 
   const handlePointerCancel = () => {
     dragging.current = false;
-
-    pointerId.current = null;
-
     onFinish();
   };
 
@@ -108,7 +77,6 @@ export default function GameGrid({ grid, selected, newCells, disabled, onStart, 
         {grid.map((row, rowIndex) =>
           row.map((letter, colIndex) => {
             const selectedCell = isSelected(rowIndex, colIndex);
-
             const newCell = isNew(rowIndex, colIndex);
 
             return (
@@ -116,11 +84,11 @@ export default function GameGrid({ grid, selected, newCells, disabled, onStart, 
                 key={`${rowIndex}-${colIndex}`}
                 type="button"
                 disabled={disabled}
-                data-grid-cell="true"
+                data-grid-cell
                 data-row={rowIndex}
                 data-col={colIndex}
                 onPointerDown={(event) => handlePointerDown(event, rowIndex, colIndex)}
-                className={`relative aspect-square min-w-0 m-1 overflow-hidden rounded-[5px] border font-black transition text-2xl sm:text-3xl ${
+                className={`relative m-1 aspect-square min-w-0 overflow-hidden rounded-[5px] border font-black transition text-2xl sm:text-3xl ${
                   selectedCell
                     ? "border-brand-tertiary bg-brand-tertiary text-background shadow-lg"
                     : "border-brand-border bg-brand-card text-cell-text hover:border-brand-accent"

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { getCurrentUser } from "aws-amplify/auth";
-
 import Header from "./components/Header.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import PlayPage from "./pages/PlayPage.jsx";
@@ -9,7 +8,6 @@ import LeaderboardPage from "./pages/LeaderboardPage.jsx";
 import AnalyticsPage from "./pages/AnalyticsPage.jsx";
 import HowToPlayPage from "./pages/HowToPlayPage.jsx";
 import SignInPage from "./pages/SignInPage.jsx";
-import SignUpPage from "./pages/SignUpPage.jsx";
 import api from "./api.js";
 
 export default function App() {
@@ -56,9 +54,6 @@ export default function App() {
         <div className="mx-auto w-full max-w-[1500px] px-4 pb-10 pt-5 sm:px-6 lg:px-8">
           <Routes>
             <Route path="/signin" element={<SignInPage setUser={setUser} />} />
-
-            <Route path="/signup" element={<SignUpPage setUser={setUser} />} />
-
             {user ? (
               <>
                 <Route path="/" element={<HomePage user={user} />} />

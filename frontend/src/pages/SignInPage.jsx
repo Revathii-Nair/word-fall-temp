@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { Eye, EyeOff, LockKeyhole, Mail, LogIn } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
 import { signIn } from "aws-amplify/auth";
 
-export default function SignInPage() {
-  const navigate = useNavigate();
+const SIGN_UP_URL =
+  "https://ap-south-1xunnsjsub.auth.ap-south-1.amazoncognito.com/signup" +
+  "?client_id=388ic5mifocpkc420jtp51e55a" +
+  "&response_type=code" +
+  "&scope=email+openid+phone" +
+  "&redirect_uri=http%3A%2F%2Flocalhost%3A5173";
 
+export default function SignInPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +18,7 @@ export default function SignInPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
     setLoading(true);
     setError("");
 
@@ -21,11 +26,10 @@ export default function SignInPage() {
       await signIn({ username, password });
       window.location.href = "/";
     } catch (error) {
-      console.error("Unable to sign in:", error);
       setError(error.message || "Unable to sign in.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -97,9 +101,9 @@ export default function SignInPage() {
 
           <div className="mt-6 text-center text-sm text-brand-muted">
             Don't have an account?
-            <Link to="/signup" className="ml-1 font-bold text-brand-accent hover:underline">
+            <a href={SIGN_UP_URL} className="ml-1 font-bold text-brand-accent hover:underline">
               Create one
-            </Link>
+            </a>
           </div>
         </div>
       </div>

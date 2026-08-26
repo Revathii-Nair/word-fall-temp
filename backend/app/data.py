@@ -37,17 +37,13 @@ def update_user_after_game(username,score,word_count):
     users_table.put_item(Item=updated_user)
     return updated_user
 
-def save_game(username,game_id, mode, grid_size, score, words, duration):
+def save_game(username,game_id, mode, grid_size, score, words, duration,puzzle_id=None):
     word_count = len(words)
-    word_scores = {}
     highest_word = ""
     highest_word_score = 0
     lowest_word = ""
     lowest_word_score = 0
     common_word = ""
-
-    for word in words:
-        word_scores[word] = len(word) * 10
 
     if words:
         highest_word = max(words, key=lambda word: len(word))
@@ -61,6 +57,7 @@ def save_game(username,game_id, mode, grid_size, score, words, duration):
 
     game = {
         "username": username,
+        "puzzleId": puzzle_id,
         "gameId": game_id,
         "date": datetime.now(timezone.utc).isoformat(),
         "mode": mode,
@@ -133,16 +130,8 @@ def get_leaderboard():
         })
     return leaderboard
 
-def get_user_position(username):
-    leaderboard = get_leaderboard()
-    for player in leaderboard:
-        if player["username"] == username:
-            return player["position"]
-    return None
-
-def get_daily_puzzle(puzzle_id):
-    response = daily_table.get_item(
-        Key={"puzzleId": puzzle_id}
-    )
-
+def get_daily_puzzle():
+    today = datetime.now(timezone.utc).strftime("%Y%m%d")
+    puzzle_id = int(today)
+    response = daily_table.get_item(Key={"puzzleId": puzzle_id})
     return response.get("Item")

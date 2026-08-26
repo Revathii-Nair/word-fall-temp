@@ -5,18 +5,16 @@ export default function WordList({ words }) {
         <h3 className="text-sm font-bold">Words collected</h3>
         <span className="text-xs text-brand-muted">{words.length}</span>
       </div>
+
       <div className="flex flex-wrap gap-2">
-        {words
-          .slice()
-          .reverse()
-          .map((word, index) => (
-            <span
-              key={`${word}-${index}`}
-              className="animate-word-trail rounded-lg border border-brand-pink bg-brand-pink/10 px-2.5 py-1.5 text-xs font-black text-brand-pink"
-            >
-              {word}
-            </span>
-          ))}
+        {[...words].reverse().map((word, index) => (
+          <span
+            key={`${word}-${index}`}
+            className="animate-word-trail rounded-lg border border-brand-pink bg-brand-pink/10 px-2.5 py-1.5 text-xs font-black text-brand-pink"
+          >
+            {word}
+          </span>
+        ))}
       </div>
     </div>
   );

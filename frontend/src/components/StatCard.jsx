@@ -1,5 +1,12 @@
 export default function StatCard({ label, value, sub, icon: Icon, accent = "brand-accent" }) {
-  const colors = {
+  const textColors = {
+    "brand-accent": "text-brand-accent",
+    "brand-secondary": "text-brand-secondary",
+    "brand-tertiary": "text-brand-tertiary",
+    "brand-pink": "text-brand-pink",
+    "brand-error": "text-brand-error",
+  };
+  const iconColors = {
     "brand-accent": "text-brand-accent border-brand-accent bg-brand-accent/10",
     "brand-secondary": "text-brand-secondary border-brand-secondary bg-brand-secondary/10",
     "brand-tertiary": "text-brand-tertiary border-brand-tertiary bg-brand-tertiary/10",
@@ -11,10 +18,10 @@ export default function StatCard({ label, value, sub, icon: Icon, accent = "bran
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-xs font-semibold text-brand-muted">{label}</div>
-          <div className={`mt-1 text-2xl font-black ${colors[accent]?.split(" ")[0]}`}>{value}</div>
+          <div className={`mt-1 text-2xl font-black ${textColors[accent]}`}>{value}</div>
           <div className="mt-1 text-[11px] text-brand-muted">{sub}</div>
         </div>
-        <div className={`rounded-xl border p-2 ${colors[accent]}`}>
+        <div className={`rounded-xl border p-2 ${iconColors[accent]}`}>
           <Icon size={18} />
         </div>
       </div>

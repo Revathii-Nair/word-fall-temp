@@ -2,7 +2,7 @@ import time
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .game import GRID_SIZES, collect_word, new_game
-from .data import get_daily_puzzle,calculate_difficulty,get_game_history,get_history_with_difficulty,get_leaderboard,get_user,save_game
+from .data import get_daily_puzzle,get_game_history,get_history_with_difficulty,get_leaderboard,get_user,save_game
 
 app = FastAPI()
 app.add_middleware(
@@ -47,21 +47,40 @@ def start_game(grid: dict):
 
     grid_size = grid.get("gridSize", 5)
     mode = grid.get("mode", "free")
+    puzzle_id = None
 
     if grid_size not in GRID_SIZES:
-        return {
-            "accepted": False,
-            "message": "Grid size must be 5, 6, 7, 8, or 9.",
-        }
+        return {"accepted": False,"message": "Grid size must be 5, 6, 7, 8, or 9."}
+
+    if mode == "daily":
+        puzzle = get_daily_puzzle()
+        if not puzzle:
+            return {"accepted": False,"message": "Today's puzzle is not available."}
+
+        history = get_game_history(username)
+        for game in history:
+            if (game.get("mode") == "daily"and game.get("puzzleId") == puzzle.get("puzzleId")):
+                return {
+                    "accepted": False,
+                    "alreadyPlayed": True,
+                    "message": "You already played today's daily."}
+
+        grid = puzzle["grid"]
+        grid_size = puzzle["gridSize"]
+        puzzle_id = puzzle["puzzleId"]
+        game = new_game(grid_size)
+        game.grid = grid
+    else:
+        game = new_game(grid_size)
 
     game_id = next_game_id
     next_game_id += 1
-    game = new_game(grid_size)
 
     active_games[game_id] = {
-        "userId": username,
+        "username": username,
         "mode": mode,
         "gridSize": grid_size,
+        "puzzleId": puzzle_id,
         "game": game,
         "startedAt": time.time(),
     }
@@ -69,38 +88,7 @@ def start_game(grid: dict):
     return {
         "accepted": True,
         "gameId": game_id,
-        "grid": game.grid,
-        "gridSize": grid_size,
-        "score": game.score,
-        "found": game.found,
-    }
-
-
-@app.post("/api/game/reset")
-def reset_game(grid: dict):
-    global next_game_id
-    username = grid.get("username")
-
-    grid_size = grid.get("gridSize", 5)
-
-    if grid_size not in GRID_SIZES:
-        return {"accepted": False, "message": "Grid size must be 5, 6, 7, 8, or 9." }
-
-    game_id = next_game_id
-    next_game_id += 1
-    game = new_game(grid_size)
-
-    active_games[game_id] = {
-        "userId": username,
-        "mode": "free",
-        "gridSize": grid_size,
-        "game": game,
-        "startedAt": time.time(),
-    }
-
-    return {
-        "accepted": True,
-        "gameId": game_id,
+        "puzzleId": puzzle_id,
         "grid": game.grid,
         "gridSize": grid_size,
         "score": game.score,
@@ -118,7 +106,7 @@ def collect(grid: dict):
     if not active_game:
         return {"accepted": False, "validation": {"reason": "Game not found."}}
 
-    if active_game["userId"] != username:
+    if active_game["username"] != username:
         return {"accepted": False, "validation": { "reason": "You cannot access this game."}}
 
     return collect_word(active_game["game"], cells)
@@ -132,7 +120,7 @@ def finish_game(grid: dict):
     if not active_game:
         return {"accepted": False, "message": "Game not found."}
 
-    if active_game["userId"] != username:
+    if active_game["username"] != username:
         return {"accepted": False, "message": "You cannot finish this game."}
 
     game = active_game["game"]
@@ -146,45 +134,8 @@ def finish_game(grid: dict):
         score=game.score,
         words=game.found,
         duration=duration,
+        puzzle_id=active_game["puzzleId"],
     )
 
     del active_games[game_id]
     return {"accepted": True, "game": saved_game}
-
-
-@app.post("/api/daily/difficulty")
-def daily_difficulty(grid: dict):
-    username = grid.get("username")
-    history = get_game_history(username)
-    words = grid.get("words", 0)
-
-    if not history:
-        return {"words": words,"averageWords": 0, "difficulty": 50}
-    
-    total = 0
-
-    for game in history:
-        total += int(game.get("wordCount", 0))
-
-    average = total / len(history)
-    return {
-        "words": words,
-        "averageWords": round(average, 2),
-        "difficulty": calculate_difficulty(username, words)
-    }
-
-
-@app.get("/api/daily")
-def daily_puzzle(puzzleId: int):
-    puzzle = get_daily_puzzle(puzzleId)
-
-    if not puzzle:
-        return {
-            "accepted": False,
-            "message": "Daily puzzle not found.",
-        }
-
-    return {
-        "accepted": True,
-        "puzzle": puzzle,
-    }

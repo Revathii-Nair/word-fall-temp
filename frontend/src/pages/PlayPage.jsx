@@ -26,12 +26,9 @@ export default function PlayPage({ user, setUser }) {
   const [newCells, setNewCells] = useState([]);
   const [message, setMessage] = useState("Drag through adjacent letters to build a word.");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [finished, setFinished] = useState(false);
 
-  useEffect(() => {
-    setLoading(true);
-    setError("");
+  const resetState = () => {
     setSelected([]);
     setNewCells([]);
     setPaused(false);
@@ -41,6 +38,11 @@ export default function PlayPage({ user, setUser }) {
     setGameId(null);
     setPuzzleId(null);
     setFinished(false);
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    resetState();
 
     if (isDaily) {
       setMessage("Loading today's puzzle...");
@@ -50,17 +52,11 @@ export default function PlayPage({ user, setUser }) {
 
     async function startGame() {
       try {
-        const res = await api.post("/api/game/start", {
-          username: user.username,
-          gridSize,
-          mode: isDaily ? "daily" : "free",
-          puzzleId: isDaily ? 1 : null,
-        });
-
+        const res = await api.post("/api/game/start", { username: user.username, gridSize, mode: isDaily ? "daily" : "free" });
         const data = res.data;
 
         if (!data.accepted) {
-          setError(data.message || "Unable to start game.");
+          setMessage(data.message || "Unable to start game.");
           setLoading(false);
           return;
         }
@@ -78,7 +74,7 @@ export default function PlayPage({ user, setUser }) {
           setMessage("Drag through adjacent letters to build a word.");
         }
       } catch (err) {
-        setError(err.response?.data?.detail || err.message || "Unable to start game.");
+        setMessage(err.response?.data?.detail || err.message || "Unable to start game.");
         setLoading(false);
       }
     }
@@ -101,12 +97,6 @@ export default function PlayPage({ user, setUser }) {
   }, [paused, seconds, loading, finished]);
 
   useEffect(() => {
-    if (error) {
-      setMessage(error);
-    }
-  }, [error]);
-
-  useEffect(() => {
     if (seconds !== 0 || gameId === null || loading || finished) return;
 
     setFinished(true);
@@ -120,7 +110,7 @@ export default function PlayPage({ user, setUser }) {
         const data = res.data;
 
         if (!data.accepted) {
-          setError(data.message || "Unable to finish game.");
+          setMessage(data.message || "Unable to finish game.");
           return;
         }
 
@@ -138,7 +128,7 @@ export default function PlayPage({ user, setUser }) {
           rounds: (value.rounds || 0) + 1,
         }));
       } catch (err) {
-        setError(err.response?.data?.detail || err.message || "Unable to finish game.");
+        setMessage(err.response?.data?.detail || err.message || "Unable to finish game.");
       }
     }
 
@@ -146,23 +136,8 @@ export default function PlayPage({ user, setUser }) {
   }, [seconds, gameId, loading, finished, user.username, setUser]);
 
   const reset = () => {
-    setSelected([]);
-    setNewCells([]);
-    setPaused(false);
-    setSeconds(ROUND_SECONDS);
-    setScore(0);
-    setFound([]);
-    setGameId(null);
-    setPuzzleId(null);
-    setFinished(false);
-    setError("");
-
-    if (isDaily) {
-      setMessage("Loading today's puzzle...");
-    } else {
-      setMessage("Drag through adjacent letters to build a word.");
-    }
-
+    resetState();
+    setMessage(isDaily ? "Loading today's puzzle..." : "Drag through adjacent letters to build a word.");
     setRestartKey((value) => value + 1);
   };
 
@@ -170,50 +145,31 @@ export default function PlayPage({ user, setUser }) {
     if (isDaily) return;
 
     setGridSize(size);
-    setSelected([]);
-    setNewCells([]);
-    setPaused(false);
-    setSeconds(ROUND_SECONDS);
-    setScore(0);
-    setFound([]);
-    setGameId(null);
-    setPuzzleId(null);
-    setFinished(false);
-    setError("");
+    resetState();
     setMessage(`New ${size}x${size} random grid.`);
     setRestartKey((value) => value + 1);
   };
 
   const handleStart = (cell) => {
-    if (loading || paused || seconds === 0 || grid.length === 0) return;
+    if (!running || grid.length === 0) return;
 
     setSelected([cell]);
-    setMessage(grid[cell[0]][cell[1]]);
   };
 
   const handleMove = (cell) => {
-    if (loading || paused || seconds === 0 || grid.length === 0) return;
-    if (selected.length === 0) return;
-
+    if (!running || grid.length === 0 || selected.length === 0) return;
     const previous = selected[selected.length - 1];
     const rowDistance = Math.abs(cell[0] - previous[0]);
     const columnDistance = Math.abs(cell[1] - previous[1]);
     const adjacent = rowDistance <= 1 && columnDistance <= 1 && (rowDistance !== 0 || columnDistance !== 0);
-
     if (!adjacent) return;
-
     const alreadySelected = selected.some(([row, column]) => row === cell[0] && column === cell[1]);
-
     if (alreadySelected) return;
-
-    const nextSelection = [...selected, cell];
-
-    setSelected(nextSelection);
-    setMessage(nextSelection.map(([row, column]) => grid[row][column]).join(""));
+    setSelected([...selected, cell]);
   };
 
   const handleFinish = () => {
-    if (loading || paused || seconds === 0 || finished) {
+    if (!running || finished) {
       setSelected([]);
       return;
     }
@@ -340,8 +296,6 @@ export default function PlayPage({ user, setUser }) {
             <div className="mt-2 min-h-12 rounded-xl border border-brand-border bg-background p-3 text-center text-lg font-black tracking-wider text-brand-accent">
               {displayMessage}
             </div>
-
-            <div className="mt-2 text-xs leading-5 text-brand-muted"></div>
           </div>
 
           <GameGrid
