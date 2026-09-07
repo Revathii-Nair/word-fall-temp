@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Trophy } from "lucide-react";
-import PageTitle from "../components/PageTitle.jsx";
 import api from "../api.js";
 
 export default function LeaderboardPage({ user }) {
@@ -19,8 +18,6 @@ export default function LeaderboardPage({ user }) {
 
   return (
     <div>
-      <PageTitle title="Leaderboard" description="A shared ranking for the daily puzzle. Results are independent solo runs." />
-
       <div className="grid items-start gap-5 lg:grid-cols-[1fr_340px]">
         <div className="overflow-hidden rounded-2xl border border-brand-border bg-brand-card">
           <div className="grid grid-cols-[52px_1fr_90px_90px_80px] border-b border-brand-border px-4 py-3 text-[10px] font-bold uppercase tracking-[.16em] text-brand-muted">

@@ -3,14 +3,12 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { signOut } from "aws-amplify/auth";
 
 export const routes = [
-  { to: "/", label: "Home" },
   { to: "/play", label: "Play" },
   { to: "/leaderboard", label: "Leaderboard" },
   { to: "/analytics", label: "Analytics" },
-  { to: "/how-to-play", label: "How to Play" },
 ];
 
-export default function Header({ menuOpen, setMenuOpen, dark, setDark }) {
+export default function Header({ user, menuOpen, setMenuOpen, dark, setDark }) {
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -37,22 +35,15 @@ export default function Header({ menuOpen, setMenuOpen, dark, setDark }) {
             </button>
 
             <button onClick={() => navigate("/")} className="flex items-center gap-2 text-left">
-              <span className="grid h-9 w-9 place-items-center rounded-xl border border-brand-accent bg-brand-accent/10 text-brand-accent">
-                <Sparkles size={19} />
-              </span>
-
               <span>
                 <span className="block text-base font-black">WORDFALL</span>
-                <span className="block text-[10px] font-semibold uppercase tracking-[.22em] text-brand-muted">Scrambled Grid</span>
+
+                <span className="block text-[10px] font-semibold uppercase tracking-[.22em] text-brand-muted">{user?.username || "Player"}</span>
               </span>
             </button>
           </div>
 
           <div className="hidden items-center gap-2 sm:flex">
-            <span className="rounded-full border border-brand-border bg-brand-card px-3 py-1.5 text-xs font-semibold text-brand-muted">
-              Solo Daily Puzzle
-            </span>
-
             <button
               onClick={() => setDark(!dark)}
               className="rounded-xl border border-brand-border bg-brand-card p-2 text-brand-muted"
@@ -85,6 +76,7 @@ export default function Header({ menuOpen, setMenuOpen, dark, setDark }) {
                   }
                 >
                   {label}
+
                   <ChevronRight size={15} className="ml-auto opacity-50" />
                 </NavLink>
               ))}

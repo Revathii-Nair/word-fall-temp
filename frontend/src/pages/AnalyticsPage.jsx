@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { BarChart3, Gamepad2, Sparkles, Target } from "lucide-react";
-import PageTitle from "../components/PageTitle.jsx";
 import StatCard from "../components/StatCard.jsx";
 import ChartCard from "../components/ChartCard.jsx";
 import RoundDetails from "../components/RoundDetails.jsx";
@@ -34,16 +33,14 @@ export default function AnalyticsPage({ user }) {
 
   return (
     <div>
-      <PageTitle title="Analytics" description="Your performance trends and puzzle difficulty based on your previous rounds." />
-
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Avg words / round" value={averageWords.toFixed(1)} sub="your history" icon={Target} />
+        <StatCard label="Avg words / round" value={averageWords.toFixed(1)} sub="your history" accent="brand-accent" />
 
-        <StatCard label="Personal best" value={user.best} sub="highest score" icon={BarChart3} accent="brand-secondary" />
+        <StatCard label="Personal best" value={user.best} sub="highest score" accent="brand-secondary" />
 
-        <StatCard label="Best puzzle" value={bestPuzzle} sub="words" icon={Sparkles} accent="brand-tertiary" />
+        <StatCard label="Best puzzle" value={bestPuzzle} sub="words" accent="brand-tertiary" />
 
-        <StatCard label="Rounds played" value={user.rounds} sub="this account" icon={Gamepad2} accent="brand-pink" />
+        <StatCard label="Rounds played" value={user.rounds} sub="lifetime" accent="brand-pink" />
       </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[1.5fr_1fr]">
@@ -58,7 +55,7 @@ export default function AnalyticsPage({ user }) {
             ) : history.length === 0 ? (
               <p className="text-sm text-brand-muted">No previous games yet.</p>
             ) : (
-              history.slice(0, 4).map((game) => (
+              history.slice(0, 6).map((game) => (
                 <div key={game.gameId}>
                   <div className="mb-1 flex justify-between text-xs">
                     <span className="font-semibold">

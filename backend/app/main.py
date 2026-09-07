@@ -66,8 +66,9 @@ def start_game(grid: dict):
                     "message": "You already played today's daily."}
 
         grid = puzzle["grid"]
-        grid_size = puzzle["gridSize"]
-        puzzle_id = puzzle["puzzleId"]
+        grid_size = int(puzzle["gridSize"])
+        puzzle_id = int(puzzle["puzzleId"])
+
         game = new_game(grid_size)
         game.grid = grid
     else:

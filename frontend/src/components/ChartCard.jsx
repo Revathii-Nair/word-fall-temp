@@ -19,15 +19,9 @@ export default function ChartCard({ history }) {
       <div className="flex items-start justify-between">
         <div>
           <h3 className="font-bold">Score trend</h3>
-          <p className="mt-1 text-xs text-brand-muted">Last {rounds.length} rounds</p>
         </div>
 
-        {rounds.length >= 2 && (
-          <span className="rounded-full border border-brand-accent bg-brand-accent/10 px-2.5 py-1 text-[10px] font-bold text-brand-accent">
-            {change >= 0 ? "+" : ""}
-            {change}%
-          </span>
-        )}
+        {rounds.length >= 2 && <p className="mt-1 text-xs text-brand-muted">Last {rounds.length} rounds</p>}
       </div>
 
       <div className="mt-8 flex h-52 items-end gap-2 border-b border-brand-border pb-2">

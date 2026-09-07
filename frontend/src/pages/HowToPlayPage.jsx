@@ -1,35 +1,30 @@
 import { Clock3, Target, Trophy } from "lucide-react";
-import PageTitle from "../components/PageTitle.jsx";
 
 export default function HowToPlayPage() {
   return (
     <div>
-      <PageTitle title="How to play" description="Everything needed for the core single-player loop and cascading-letter mechanic." />
-
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="rounded-2xl border border-brand-border bg-brand-card p-6">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-brand-accent/10 text-sm font-black text-brand-accent">1</div>
-
-          <h2 className="mt-5 text-xl font-black">Find a line</h2>
-
-          <p className="mt-2 text-sm leading-7 text-brand-muted">Select two cells that form a horizontal, vertical, or diagonal line.</p>
-        </div>
-
-        <div className="rounded-2xl border border-brand-border bg-brand-card p-6">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-brand-accent/10 text-sm font-black text-brand-accent">2</div>
-
-          <h2 className="mt-5 text-xl font-black">Collect the word</h2>
-
-          <p className="mt-2 text-sm leading-7 text-brand-muted">If the word is in the target list, it scores immediately.</p>
-        </div>
-
-        <div className="rounded-2xl border border-brand-border bg-brand-card p-6">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-brand-accent/10 text-sm font-black text-brand-accent">3</div>
-
-          <h2 className="mt-5 text-xl font-black">Watch the fall</h2>
+          <h2 className=" text-xl font-black">Find a word</h2>
 
           <p className="mt-2 text-sm leading-7 text-brand-muted">
-            Collected cells disappear, survivors collapse downward, and fresh letters enter from above.
+            Select two cells that form a horizontal, vertical, or diagonal line to create a word.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-brand-border bg-brand-card p-6">
+          <h2 className=" text-xl font-black">Submit the word</h2>
+
+          <p className="mt-2 text-sm leading-7 text-brand-muted">
+            Release your selection to submit the word. Valid words are added to your score immediately.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-brand-border bg-brand-card p-6">
+          <h2 className="text-xl font-black">Score before time runs out</h2>
+
+          <p className="mt-2 text-sm leading-7 text-brand-muted">
+            Find as many valid words as possible before the timer reaches zero. Longer words earn more points.
           </p>
         </div>
       </div>
@@ -40,17 +35,17 @@ export default function HowToPlayPage() {
         <ul className="mt-4 space-y-3 text-sm text-brand-muted">
           <li className="flex gap-3">
             <Clock3 size={17} />
-            90-second local demo timer.
+            Each round lasts 90 seconds.
           </li>
 
           <li className="flex gap-3">
             <Target size={17} />
-            Solo play; no live interaction during a round.
+            Find words by selecting cells in a straight horizontal, vertical, or diagonal line.
           </li>
 
           <li className="flex gap-3">
             <Trophy size={17} />
-            Leaderboard results appear after submission.
+            Your score, words, and completed round are saved to your account.
           </li>
         </ul>
       </div>

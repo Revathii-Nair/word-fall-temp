@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Clock3, Pause, Play, RotateCcw, Trophy, Zap } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
 import GameStat from "../components/GameStat.jsx";
 import GameGrid from "../components/GameGrid.jsx";
 import WordList from "../components/WordList.jsx";
@@ -10,9 +9,8 @@ export const GRID_SIZES = [5, 6, 7, 8, 9];
 export const DEFAULT_GRID_SIZE = 5;
 export const ROUND_SECONDS = 90;
 
-export default function PlayPage({ user, setUser }) {
-  const [searchParams] = useSearchParams();
-  const isDaily = searchParams.get("daily") === "true";
+export default function PlayPage({ user, setUser, daily = false }) {
+  const isDaily = daily;
   const [gridSize, setGridSize] = useState(DEFAULT_GRID_SIZE);
   const [restartKey, setRestartKey] = useState(0);
   const [grid, setGrid] = useState([]);
@@ -221,13 +219,8 @@ export default function PlayPage({ user, setUser }) {
 
   return (
     <div>
-      <div className="mb-6 flex flex-row items-end justify-between border-b border-brand-border pb-2">
-        <div>
-          <h1 className="text-4xl font-black tracking-tight">Wordfall</h1>
-
-          {isDaily && puzzleId && <p className="mt-1 text-sm font-bold text-brand-accent">Daily #{puzzleId}</p>}
-          {!isDaily && <p className="mt-1 text-sm text-brand-muted">Free Play</p>}
-        </div>
+      <div className="mb-6 flex flex-row items-end justify-between">
+        <div></div>
 
         <div className="flex flex-wrap items-center justify-end gap-2">
           {!isDaily && (

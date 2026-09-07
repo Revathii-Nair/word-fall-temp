@@ -1,92 +1,86 @@
-import { Flame, Target, Trophy } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import StatCard from "../components/StatCard.jsx";
+import { useState } from "react";
+import HowToPlayPage from "./HowToPlayPage.jsx";
+import LeaderboardPage from "./LeaderboardPage.jsx";
+import AnalyticsPage from "./AnalyticsPage.jsx";
+import PlayPage from "./PlayPage.jsx";
 
-export default function HomePage({ user }) {
-  const navigate = useNavigate();
+export default function HomePage({ user, setUser }) {
+  const [activeSection, setActiveSection] = useState("howto");
+
+  const handleSectionClick = (section) => {
+    setActiveSection((current) => (current === section ? null : section));
+  };
 
   return (
     <>
-      <div className="mb-8 mt-3 w-full">
-        <h1 className="text-3xl font-bold">
-          Welcome back, <span className="text-brand-accent">{user.username || "Player"}</span>!
-        </h1>
-      </div>
+      <div className="flex flex-col gap-6">
+        <div className="flex w-full flex-wrap justify-center gap-4">
+          <button
+            onClick={() => handleSectionClick("howto")}
+            className={`min-w-[190px] flex-1 rounded-xl border px-4 py-4 text-lg font-bold transition-all ${
+              activeSection === "howto"
+                ? "border-brand-accent bg-brand-accent/10 text-brand-accent"
+                : "border-brand-border text-brand-muted hover:border-brand-accent hover:bg-brand-accent/10 hover:text-brand-accent"
+            }`}
+          >
+            How it works
+          </button>
 
-      <div className="flex gap-6">
-        <StatCard label="Personal best" value={user.best} sub="points in a single run" icon={Trophy} accent="brand-tertiary" />
+          <button
+            onClick={() => handleSectionClick("leaderboard")}
+            className={`min-w-[190px] flex-1 rounded-xl border px-4 py-4 text-lg font-bold transition-all ${
+              activeSection === "leaderboard"
+                ? "border-brand-accent bg-brand-accent/10 text-brand-accent"
+                : "border-brand-border text-brand-muted hover:border-brand-accent hover:bg-brand-accent/10 hover:text-brand-accent"
+            }`}
+          >
+            Leaderboard
+          </button>
 
-        <StatCard label="Current streak" value={`${user.streak} days`} sub="keep the daily chain alive" icon={Flame} accent="brand-pink" />
+          <button
+            onClick={() => handleSectionClick("analytics")}
+            className={`min-w-[190px] flex-1 rounded-xl border px-4 py-4 text-lg font-bold transition-all ${
+              activeSection === "analytics"
+                ? "border-brand-accent bg-brand-accent/10 text-brand-accent"
+                : "border-brand-border text-brand-muted hover:border-brand-accent hover:bg-brand-accent/10 hover:text-brand-accent"
+            }`}
+          >
+            Analytics
+          </button>
 
-        <StatCard label="Words found" value={user.words} sub="across completed rounds" icon={Target} />
-      </div>
+          <button
+            onClick={() => handleSectionClick("daily")}
+            className={`min-w-[190px] flex-1 rounded-xl border px-4 py-4 text-lg font-bold transition-all ${
+              activeSection === "daily"
+                ? "border-brand-accent bg-brand-accent/10 text-brand-accent"
+                : "border-brand-border text-brand-muted hover:border-brand-accent hover:bg-brand-accent/10 hover:text-brand-accent"
+            }`}
+          >
+            Play daily puzzle
+          </button>
 
-      <div className="mt-12 flex flex-col gap-6 lg:flex-row">
-        <div className="flex flex-1 items-center justify-center rounded-3xl border border-brand-border bg-brand-card p-4">
-          <div className="flex w-full flex-wrap justify-center gap-5">
-            <button
-              onClick={() => navigate("/play?daily=true")}
-              className="min-w-[200px] flex-1 rounded-xl border border-brand-accent bg-brand-accent/10 px-4 py-4 text-lg font-bold text-brand-accent transition-all hover:bg-brand-accent/20"
-            >
-              Play daily puzzle
-            </button>
-
-            <button
-              onClick={() => navigate("/how-to-play")}
-              className="min-w-[200px] flex-1 rounded-xl border border-brand-border px-4 py-4 text-lg font-bold text-brand-muted transition-all hover:bg-brand-border/20"
-            >
-              How it works
-            </button>
-
-            <button
-              onClick={() => navigate("/leaderboard")}
-              className="min-w-[200px] flex-1 rounded-xl border border-brand-border px-4 py-4 text-lg font-bold text-brand-muted transition-all hover:bg-brand-border/20"
-            >
-              Leaderboard
-            </button>
-
-            <button
-              onClick={() => navigate("/analytics")}
-              className="min-w-[200px] flex-1 rounded-xl border border-brand-border px-4 py-4 text-lg font-bold text-brand-muted transition-all hover:bg-brand-border/20"
-            >
-              Analytics
-            </button>
-          </div>
+          <button
+            onClick={() => handleSectionClick("play")}
+            className={`min-w-[190px] flex-1 rounded-xl border px-4 py-4 text-lg font-bold transition-all ${
+              activeSection === "play"
+                ? "border-brand-accent bg-brand-accent/10 text-brand-accent"
+                : "border-brand-border text-brand-muted hover:border-brand-accent hover:bg-brand-accent/10 hover:text-brand-accent"
+            }`}
+          >
+            Random puzzle
+          </button>
         </div>
       </div>
 
-      <div className="mt-16 flex flex-col gap-6 rounded-3xl border border-brand-border bg-brand-card p-10">
-        <h2 className="text-center text-2xl font-bold text-brand-accent">About Wordfall</h2>
-
-        <p className="mx-auto max-w-3xl text-center text-sm leading-relaxed text-brand-muted">
-          Wordfall is a fast-paced word-finding challenge where letters cascade into place and every second counts. Build words, chain combos, and
-          climb your streak as you race against time. The longer you survive, the more intense the board becomes — pushing your vocabulary and
-          reflexes to the limit.
-        </p>
-
-        <div className="mt-4 flex flex-wrap justify-center gap-6">
-          <div className="w-full rounded-2xl border border-brand-border bg-brand-card p-6 sm:w-[280px]">
-            <h3 className="mb-2 text-lg font-bold text-brand-accent">Dynamic Boards</h3>
-            <p className="text-sm leading-relaxed text-brand-muted">
-              Every round generates a unique board layout, keeping gameplay fresh and unpredictable.
-            </p>
-          </div>
-
-          <div className="w-full rounded-2xl border border-brand-border bg-brand-card p-6 sm:w-[280px]">
-            <h3 className="mb-2 text-lg font-bold text-brand-accent">Combo System</h3>
-            <p className="text-sm leading-relaxed text-brand-muted">
-              Chain multiple words in quick succession to activate score multipliers and bonus time.
-            </p>
-          </div>
-
-          <div className="w-full rounded-2xl border border-brand-border bg-brand-card p-6 sm:w-[280px]">
-            <h3 className="mb-2 text-lg font-bold text-brand-accent">Streak Progression</h3>
-            <p className="text-sm leading-relaxed text-brand-muted">
-              Daily play increases your streak, unlocking new challenges and exclusive rewards.
-            </p>
-          </div>
+      {activeSection && (
+        <div className="mt-8">
+          {activeSection === "howto" && <HowToPlayPage />}
+          {activeSection === "leaderboard" && <LeaderboardPage user={user} />}
+          {activeSection === "analytics" && <AnalyticsPage user={user} />}
+          {activeSection === "daily" && <PlayPage user={user} setUser={setUser} daily={true} />}
+          {activeSection === "play" && <PlayPage user={user} setUser={setUser} daily={false} />}
         </div>
-      </div>
+      )}
     </>
   );
 }

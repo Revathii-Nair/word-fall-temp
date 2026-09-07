@@ -49,22 +49,17 @@ export default function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-background text-foreground">
-        {user && <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} dark={dark} setDark={setDark} />}
+        {user && <Header user={user} menuOpen={menuOpen} setMenuOpen={setMenuOpen} dark={dark} setDark={setDark} />}
 
         <div className="mx-auto w-full max-w-[1500px] px-4 pb-10 pt-5 sm:px-6 lg:px-8">
           <Routes>
             <Route path="/signin" element={<SignInPage setUser={setUser} />} />
             {user ? (
               <>
-                <Route path="/" element={<HomePage user={user} />} />
-
+                <Route path="/" element={<HomePage user={user} setUser={setUser} />} />
                 <Route path="/play" element={<PlayPage user={user} setUser={setUser} />} />
-
                 <Route path="/leaderboard" element={<LeaderboardPage user={user} />} />
-
                 <Route path="/analytics" element={<AnalyticsPage user={user} />} />
-
-                <Route path="/how-to-play" element={<HowToPlayPage />} />
               </>
             ) : (
               <Route path="*" element={<SignInPage setUser={setUser} />} />
