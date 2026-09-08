@@ -71,39 +71,30 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
-* { box-sizing: border-box; }
-button, a { -webkit-tap-highlight-color: transparent; }
+* {
+  box-sizing: border-box;
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
 
 @keyframes fallIn {
-  0% { transform: translateY(-38px) scale(.9); opacity: 0; }
-  70% { transform: translateY(5px) scale(1.03); opacity: 1; }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
+  0% {
+    transform: translateY(-38px) scale(0.9);
+    opacity: 0;
+  }
+  70% {
+    transform: translateY(5px) scale(1.03);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
-
-@keyframes pop {
-  0% { transform: scale(.86); }
-  55% { transform: scale(1.12); }
-  100% { transform: scale(1); }
-}
-
-@keyframes pulseGlow {
-  0%,100% { box-shadow: 0 0 0 0 var(--grid-color); }
-  50% { box-shadow: 0 0 0 7px var(--grid-color); }
-}
-
-@keyframes wordTrail {
-  0% { opacity: 0; transform: translateY(4px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fall-in { animation: fallIn .34s cubic-bezier(.2,.8,.2,1) both; }
-.animate-pop { animation: pop .25s ease-out both; }
-.animate-pulse-glow { animation: pulseGlow 1.8s ease-in-out infinite; }
-.animate-word-trail { animation: wordTrail .24s ease-out both; }
-
-.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
-.scrollbar-thin::-webkit-scrollbar-track { background: var(--brand-card); }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: var(--brand-border); border-radius: 999px; }

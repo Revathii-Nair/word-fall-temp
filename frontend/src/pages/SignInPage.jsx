@@ -3,23 +3,18 @@ import { Eye, EyeOff, LockKeyhole, Mail, LogIn } from "lucide-react";
 import { signIn } from "aws-amplify/auth";
 
 const SIGN_UP_URL =
-  "https://ap-south-1xunnsjsub.auth.ap-south-1.amazoncognito.com/signup" +
-  "?client_id=388ic5mifocpkc420jtp51e55a" +
-  "&response_type=code" +
-  "&scope=email+openid+phone" +
-  "&redirect_uri=http%3A%2F%2Flocalhost%3A5173";
+  "https://ap-south-1xunnsjsub.auth.ap-south-1.amazoncognito.com/signup?client_id=388ic5mifocpkc420jtp51e55a&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A5173";
 
 export default function SignInPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+
   const [error, setError] = useState("");
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    setLoading(true);
     setError("");
 
     try {
@@ -27,8 +22,6 @@ export default function SignInPage() {
       window.location.href = "/";
     } catch (error) {
       setError(error.message || "Unable to sign in.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -46,8 +39,8 @@ export default function SignInPage() {
             <div>
               <label className="mb-2 block text-sm font-bold">Username or Email</label>
 
-              <div className="relative">
-                <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted" />
+              <div className="flex items-center rounded-xl border border-brand-border bg-background ">
+                <Mail size={18} className="ml-3 text-brand-muted" />
 
                 <input
                   type="text"
@@ -55,7 +48,7 @@ export default function SignInPage() {
                   onChange={(event) => setUsername(event.target.value)}
                   placeholder="Username or email"
                   required
-                  className="w-full rounded-xl border border-brand-border bg-background py-3 pl-10 pr-4 text-sm outline-none focus:border-brand-accent"
+                  className="w-full bg-transparent py-3 pl-3 pr-4 text-sm outline-none"
                 />
               </div>
             </div>
@@ -63,8 +56,8 @@ export default function SignInPage() {
             <div>
               <label className="mb-2 block text-sm font-bold">Password</label>
 
-              <div className="relative">
-                <LockKeyhole size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted" />
+              <div className="flex items-center rounded-xl border border-brand-border bg-background ">
+                <LockKeyhole size={18} className="ml-3 text-brand-muted" />
 
                 <input
                   type={showPassword ? "text" : "password"}
@@ -72,14 +65,10 @@ export default function SignInPage() {
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Enter your password"
                   required
-                  className="w-full rounded-xl border border-brand-border bg-background py-3 pl-10 pr-11 text-sm outline-none focus:border-brand-accent"
+                  className="w-full bg-transparent py-3 pl-3 pr-2 text-sm outline-none"
                 />
 
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((value) => !value)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted hover:text-brand-accent"
-                >
+                <button type="button" onClick={() => setShowPassword((value) => !value)} className="mr-3 text-brand-muted hover:text-brand-accent">
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
@@ -91,11 +80,10 @@ export default function SignInPage() {
 
             <button
               type="submit"
-              disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-accent px-4 py-3 text-sm font-black text-background disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-accent px-4 py-3 text-sm font-black text-background hover:cursor-pointer"
             >
               <LogIn size={18} />
-              {loading ? "Signing in..." : "Sign In"}
+              Sign In
             </button>
           </form>
 

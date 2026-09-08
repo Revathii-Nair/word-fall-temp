@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Gamepad2, Sparkles, Target } from "lucide-react";
 import StatCard from "../components/StatCard.jsx";
 import ChartCard from "../components/ChartCard.jsx";
 import RoundDetails from "../components/RoundDetails.jsx";
@@ -12,10 +11,7 @@ export default function AnalyticsPage({ user }) {
   useEffect(() => {
     async function loadHistory() {
       try {
-        const response = await api.get("/api/user/history", {
-          params: { username: user.username },
-        });
-
+        const response = await api.get("/api/user/history", { params: { username: user.username } });
         setHistory(response.data || []);
       } catch (err) {
         setError(err.response?.data?.detail || err.message || "Unable to load game history.");

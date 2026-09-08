@@ -6,7 +6,6 @@ import HomePage from "./pages/HomePage.jsx";
 import PlayPage from "./pages/PlayPage.jsx";
 import LeaderboardPage from "./pages/LeaderboardPage.jsx";
 import AnalyticsPage from "./pages/AnalyticsPage.jsx";
-import HowToPlayPage from "./pages/HowToPlayPage.jsx";
 import SignInPage from "./pages/SignInPage.jsx";
 import api from "./api.js";
 

@@ -2,7 +2,7 @@ import time
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .game import GRID_SIZES, collect_word, new_game
-from .data import get_daily_puzzle,get_game_history,get_history_with_difficulty,get_leaderboard,get_user,save_game
+from .data import get_next_game_id,get_daily_puzzle,get_game_history,get_history_with_difficulty,get_leaderboard,get_user,save_game
 
 app = FastAPI()
 app.add_middleware(
@@ -17,8 +17,6 @@ app.add_middleware(
 )
 
 active_games = {}
-next_game_id = 1
-
 
 @app.get("/")
 def root():
@@ -43,7 +41,6 @@ def leaderboard():
 @app.post("/api/game/start")
 def start_game(grid: dict):
     username = grid.get("username")
-    global next_game_id
 
     grid_size = grid.get("gridSize", 5)
     mode = grid.get("mode", "free")
@@ -74,8 +71,7 @@ def start_game(grid: dict):
     else:
         game = new_game(grid_size)
 
-    game_id = next_game_id
-    next_game_id += 1
+    game_id = get_next_game_id(username)
 
     active_games[game_id] = {
         "username": username,

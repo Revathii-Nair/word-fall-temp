@@ -60,8 +60,6 @@ export default function Header({ user, menuOpen, setMenuOpen, dark, setDark }) {
           <button aria-label="Close navigation" className="fixed inset-0 z-40 bg-background/80" onClick={() => setMenuOpen(false)} />
 
           <div className="fixed left-4 top-[76px] z-50 w-[280px] rounded-2xl border border-brand-border bg-brand-card p-3 shadow-2xl">
-            <div className="mb-2 px-3 py-2 text-[10px] font-bold uppercase tracking-[.22em] text-brand-muted">Navigate</div>
-
             <nav className="space-y-1">
               {routes.map(({ to, label }) => (
                 <NavLink

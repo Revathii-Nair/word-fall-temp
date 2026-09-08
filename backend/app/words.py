@@ -1,9 +1,19 @@
-_WORDLIST_PATH = "app/popular.txt"
+import boto3
 
-def _load_word_bank():
-    with open(_WORDLIST_PATH, encoding="utf-8") as f:
-        return frozenset(line.strip().upper() for line in f if line.strip())
+S3_BUCKET = "wordquest-bucket-961864443815-ap-south-1-an"
+FILE_NAME = "popular.txt"
 
-WORD_BANK = _load_word_bank()
+s3 = boto3.client("s3", region_name="ap-south-1")
+
+response = s3.get_object(Bucket=S3_BUCKET, Key=FILE_NAME)
+content = response["Body"].read().decode("utf-8")
+
+WORD_BANK = set()
+
+for line in content.splitlines():
+    cleaned = line.strip()
+    if cleaned:
+        WORD_BANK.add(cleaned.upper())
+
 
 LETTERS = list("EEEEEEEEAAAAAAARRRRRIIIIIOOOONNNNTTTTLLLLSSSSPPCCDDMMGGHHBBFF")

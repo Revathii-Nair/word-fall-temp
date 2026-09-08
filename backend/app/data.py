@@ -9,6 +9,21 @@ users_table = dynamodb.Table("WordQuestUsers")
 games_table = dynamodb.Table("WordQuestGames")
 daily_table = dynamodb.Table("WordQuestDaily")
 
+def get_next_game_id(username):
+    response = games_table.query(
+        KeyConditionExpression="username = :username",
+        ExpressionAttributeValues={":username": username},
+        ScanIndexForward=False,
+        Limit=1
+    )
+
+    games = response.get("Items", [])
+
+    if not games:
+        return 1
+
+    return int(games[0]["gameId"]) + 1
+
 def get_user(username):
     response = users_table.get_item(Key={"username": username})
     user = response.get("Item")
