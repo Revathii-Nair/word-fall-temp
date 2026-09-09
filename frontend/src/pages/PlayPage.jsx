@@ -150,7 +150,6 @@ export default function PlayPage({ user, setUser, daily = false }) {
 
   const handleStart = (cell) => {
     if (!running || grid.length === 0) return;
-
     setSelected([cell]);
   };
 

@@ -93,7 +93,7 @@ def collect_word(state, cells):
     if not candidate:
         return {
             "accepted": False,
-            "validation": {"reason": f"{raw} is not a target word."},
+            "validation": {"reason": f"{raw} is not a word."},
             "grid": state.grid,
             "score": state.score,
             "found": state.found,

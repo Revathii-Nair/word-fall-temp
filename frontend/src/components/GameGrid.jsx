@@ -17,10 +17,7 @@ export default function GameGrid({ grid, selected, newCells, disabled, onStart, 
     const element = document.elementFromPoint(x, y);
     const cell = element?.closest("[data-grid-cell]");
 
-    if (!cell || !boardRef.current?.contains(cell)) {
-      return null;
-    }
-
+    if (!cell || !boardRef.current?.contains(cell)) return null;
     return [Number(cell.dataset.row), Number(cell.dataset.col)];
   };
 
@@ -29,7 +26,6 @@ export default function GameGrid({ grid, selected, newCells, disabled, onStart, 
 
     event.preventDefault();
     dragging.current = true;
-    event.currentTarget.setPointerCapture?.(event.pointerId);
 
     onStart([row, col]);
   };
@@ -67,9 +63,7 @@ export default function GameGrid({ grid, selected, newCells, disabled, onStart, 
       <div
         ref={boardRef}
         className="grid w-full gap-1 sm:gap-1.5"
-        style={{
-          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-        }}
+        style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}

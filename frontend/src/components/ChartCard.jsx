@@ -9,11 +9,6 @@ export default function ChartCard({ history }) {
     return Math.max(8, (score / maxScore) * 100);
   });
 
-  const firstScore = Number(rounds[0]?.score || 0);
-  const lastScore = Number(rounds[rounds.length - 1]?.score || 0);
-
-  const change = rounds.length >= 2 ? Math.round(((lastScore - firstScore) / Math.max(firstScore, 1)) * 100) : 0;
-
   return (
     <div className="rounded-2xl border border-brand-border bg-brand-card p-5">
       <div className="flex items-start justify-between">
